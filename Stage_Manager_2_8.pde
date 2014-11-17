@@ -25,6 +25,7 @@ String script_file_prefix = "";
 
 void setup()
 {
+
   //Set the screen size to full screen
   size(displayWidth, displayHeight);
 
@@ -43,7 +44,7 @@ void setup()
 void check_files()
 {
   Scripts.clear();
-  File dir = new File(sketchPath+"/data/scripts/");
+  File dir = new File(dataPath("scripts/"));
   File[] files = dir.listFiles();
   if (files != null)
   {
@@ -88,9 +89,11 @@ void select_script()
       {
         fill(150, 100);
       }
-      rect(menu_pos_min.x, menu_pos_min.y+32*i, menu_pos_max.x-menu_pos_min.x, 30);
-      text(f, menu_pos_min.x+30, menu_pos_min.y+32*i);
+      rect(menu_pos_min.x, menu_pos_min.y+32*i, menu_pos_max.x-menu_pos_min.x, 31);
+      text(f, menu_pos_min.x + 10, menu_pos_min.y+32*i + 24);
+      i += 32;
     }
+    rect(menu_pos_min.x, menu_pos_min.y+32*i, menu_pos_max.x-menu_pos_min.x, 30);
   } else
   {
     if (menu_pos_min.x < mouseX && mouseX < menu_pos_max.x && menu_pos_min.y < mouseY && mouseY < menu_pos_max.y)
@@ -114,12 +117,16 @@ void file_selected(File f)
   {
     println(f.getName());
     String filename = f.getName().replaceFirst("[.][^.]+$", "");
-    File dir = new File(sketchPath+"/data/scripts/"+filename+"/script.txt");
-    new File(sketchPath+"/data/scripts/"+filename+"/").mkdirs();
+    File dir = new File(dataPath("scripts/"+filename+"/script.txt"));
+    new File(dataPath("scripts/"+filename+"/")).mkdirs();
     try 
     {
       copyDirectory(f, dir);
       println("Copied script");
+      mkFile(dataPath("scripts/"+filename+"/actors.txt"));
+      mkFile(dataPath("scripts/"+filename+"/lines.txt"));
+      mkFile(dataPath("scripts/"+filename+"/NOTES.txt"));
+      mkFile(dataPath("scripts/"+filename+"/pages.txt"));
     } 
     catch (IOException e) 
     {
@@ -129,6 +136,13 @@ void file_selected(File f)
   }
 }
 
+void mkFile(String path) throws IOException
+{
+  File t = new File(path);
+  t.mkdirs();
+  t.createNewFile();
+}
+
 void mousePressed()
 {
   if (script != null)
@@ -136,9 +150,14 @@ void mousePressed()
     script.mousePressed();
   } else
   {
-    if (menu_pos_min.x < mouseX && mouseX < menu_pos_max.x && menu_pos_min.y < mouseY && mouseY < menu_pos_max.y)
+    if (Scripts.size() > 0)
     {
-      selectInput("Select a script", "file_selected");
+    } else
+    {
+      if (menu_pos_min.x < mouseX && mouseX < menu_pos_max.x && menu_pos_min.y < mouseY && mouseY < menu_pos_max.y)
+      {
+        selectInput("Select a script", "file_selected");
+      }
     }
   }
 }

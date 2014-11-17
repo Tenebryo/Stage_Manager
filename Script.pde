@@ -1126,6 +1126,7 @@ class Script
         }
       }
 
+      /* Not needed
       //Loops through every line to find lines with another line hidden in them
       for (int i = 0; i < lines.size (); i++)
       {
@@ -1149,7 +1150,7 @@ class Script
             }
           }
         }
-      }
+      }//*/
 
       assignPositionsNew();
     } else

@@ -150,10 +150,12 @@ class Script
   //Menu for assigning notes
   Menu menu;
 
+  String prefix;
 
-  Script(String prefix)
+  Script(String _prefix)
   {
-
+    prefix = _prefix;
+    println(prefix);  
     //Set the background color to black
     background(0);
     //Load in the script
@@ -1964,7 +1966,7 @@ class Script
       i += 2;
     }
 
-    saveStrings("actors.txt", saveActors);
+    saveStrings(prefix + "/actors.txt", saveActors);
     int numWords = 0;
     int numLines = 0;
 
@@ -2001,7 +2003,7 @@ class Script
       }
     }
 
-    saveStrings("lines.txt", saveWords);
+    saveStrings(prefix + "/lines.txt", saveWords);
     String[] savePages = new String[2 * pages.size()];
     i = 0;
 
@@ -2013,7 +2015,7 @@ class Script
       i += 2;
     }
 
-    saveStrings("pages.txt", savePages);
+    saveStrings(prefix + "/pages.txt", savePages);
 
     int noteCount = 0;
 
@@ -2149,7 +2151,7 @@ class Script
       }
     }
 
-    saveStrings("savedNotes.txt", saveNotes);
+    saveStrings(prefix + "/savedNotes.txt", saveNotes);
     noteCount = currentRehearsal * (3 * actors.size() + 3);
 
     for (Note note : notes)
@@ -2621,7 +2623,7 @@ class Script
       }
     }
 
-    saveStrings("NOTES.txt", showNotes);
+    saveStrings(prefix + "/NOTES.txt", showNotes);
     println("YAY YOU SAVED!");
     saved = true;
   }
@@ -2633,7 +2635,7 @@ class Script
   
   void exit()
   {
-    script = null;
+    set_script_null();
   }
 }
 

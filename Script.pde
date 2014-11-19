@@ -164,7 +164,7 @@ class Script
     actorArray = loadStrings(prefix + "/actors.txt");
     pageArray = loadStrings(prefix + "/pages.txt");
     lineArray = loadStrings(prefix + "/lines.txt");
-    noteArray = loadStrings(prefix + "/savedNotes.txt");
+    //noteArray = loadStrings(prefix + "/savedNotes.txt");
     println("Done");
     //Initialize ArrayLists for lines, actors, pages, and notes
     lines = new ArrayList<Line>();
@@ -255,7 +255,7 @@ class Script
     boolean buttonClicked = false;
 
     //Run through the buttons in this state
-    for (int i = 0; i < buttons.get(state).size(); i++)
+    for (int i = 0; i < buttons.get (state).size(); i++)
     {
       //Check to see if the button has been pressed
       if (mouseX >= buttons.get(state).get(i).getTLPx() && mouseX <= buttons.get(state).get(i).getBRPx() && mouseY >= buttons.get(state).get(i).getTLPy() && mouseY <= buttons.get(state).get(i).getBRPy())
@@ -1129,30 +1129,30 @@ class Script
       }
 
       /* Not needed
-      //Loops through every line to find lines with another line hidden in them
-      for (int i = 0; i < lines.size (); i++)
-      {
-
-        //Loops through every actor to check if the line has their name capitalized
-        for (Actor actor : actors)
-        {
-
-          //Loops through every word in lines.get(i) to compare with actor's name
-          for (int j = 0; j < lines.get (i).getWords().size(); j++)
-          {
-
-            //Checks if the word is the actor's name capitalized with or without a period
-            if (lines.get(i).getWord(j).getWord().equals(actor.getCharName()) || lines.get(i).getWord(j).getWord().equals(actor.getCharName() + "."))
-            {
-
-              //Separates the line into two separate lines
-              lines.get(i).setWord(j + 1, " " + lines.get(i).getWord(j + 1).getWord());
-              lines.add(i + 1, new Line(new ArrayList<Word>(lines.get(i).getWords().subList(j + 1, lines.get(i).getWords().size())), actor, lines.get(i).getPage()));
-              lines.get(i).setWords(new ArrayList<Word>(lines.get(i).getWords().subList(0, j)));
-            }
-          }
-        }
-      }//*/
+       //Loops through every line to find lines with another line hidden in them
+       for (int i = 0; i < lines.size (); i++)
+       {
+       
+       //Loops through every actor to check if the line has their name capitalized
+       for (Actor actor : actors)
+       {
+       
+       //Loops through every word in lines.get(i) to compare with actor's name
+       for (int j = 0; j < lines.get (i).getWords().size(); j++)
+       {
+       
+       //Checks if the word is the actor's name capitalized with or without a period
+       if (lines.get(i).getWord(j).getWord().equals(actor.getCharName()) || lines.get(i).getWord(j).getWord().equals(actor.getCharName() + "."))
+       {
+       
+       //Separates the line into two separate lines
+       lines.get(i).setWord(j + 1, " " + lines.get(i).getWord(j + 1).getWord());
+       lines.add(i + 1, new Line(new ArrayList<Word>(lines.get(i).getWords().subList(j + 1, lines.get(i).getWords().size())), actor, lines.get(i).getPage()));
+       lines.get(i).setWords(new ArrayList<Word>(lines.get(i).getWords().subList(0, j)));
+       }
+       }
+       }
+       }//*/
 
       assignPositionsNew();
     } else
@@ -1603,8 +1603,7 @@ class Script
         if (saved)
         {
           exit();
-        }
-        else
+        } else
         {
           state = UNSAVEDQUIT;
         }
@@ -2174,456 +2173,61 @@ class Script
       }
     }
 
-    String[] showNotes = new String[noteCount];
-    i = 0;
-
     for (int j = currentRehearsal; j >= 1; j--)
     {
-
-      showNotes[i] = "REHEARSAL " + j;
-      showNotes[i + 1] = "";
-      showNotes[i + 2] = "";
-      i += 3;
-
-      for (Actor actor : actors)
+      OutputStream allNotes;
+      try
       {
+        allNotes = new FileOutputStream(mkFile(prefix+"/ActorNotes/Rehearsal "+str(j)+"/AllNotes.txt"));
+      }
+      catch (Exception e) 
+      {
+        //die
+        e.printStackTrace();
+        continue;
+      }
 
-        showNotes[i] = actor.toString();
-        showNotes[i + 1] = "";
-        i += 2;
-
-        for (Note note : actor.getNotes ())
+      for (Actor a : actors)
+      {
+        try
         {
-
-          if (note.getRehearsal() == j)
+          String name = "\n\n\n" + a.getCharName() + " (Played by " + ((a.getActorName()=="")?"...":a.getActorName() + ")\n\n");
+          allNotes.write(name.getBytes());
+        }
+        catch(Exception e)
+        {
+          e.printStackTrace();
+        }
+        OutputStream actorNotes;
+        try
+        {
+          actorNotes = new FileOutputStream(mkFile(prefix+"/ActorNotes/Rehearsal "+str(j)+"/"+a.getCharName() + ((a.getActorName()=="")?"":"(" + a.getActorName() + ")" ) + ".txt"));
+        }
+        catch (Exception e) 
+        {
+          //die
+          e.printStackTrace();
+          continue;
+        }
+        for (Note n : a.getNotes ())
+        {
+          if (n.getRehearsal() == j)
           {
-
-            switch(note.getType())
+            try
             {
-
-            case 0:
-
-              showNotes[i] = "Page " + note.getLine(0).getPage() + ", SKIPPED:";
-              i++;
-
-              if (note.getLines().size() == 1)
-              {
-
-                showNotes[i] = actor.toString() + ". ";
-
-                for (int k = 1; k < 6 && k < note.getLine (0).getWords().size(); k++)
-                {
-
-                  showNotes[i] += note.getLine(0).getWord(k).getWord() + " ";
-                }
-
-                showNotes[i] += "... ";
-
-                for (int k = note.getLine (0).getWords().indexOf(note.getWord(0)) - 3; k < note.getLine(0).getWords().indexOf(note.getWord(0)); k++)
-                {
-
-                  if (k >= 0)
-                    showNotes[i] += note.getLine(0).getWord(k).getWord() + " ";
-                }
-
-                for (Word word : note.getWords ())
-                {
-
-                  showNotes[i] += word.getWord().toUpperCase() + " ";
-                }
-
-                for (int k = note.getLine (0).getWords().indexOf(note.getWord(note.getWords().size() - 1)) + 1; k < note.getLine(0).getWords().indexOf(note.getWord(note.getWords().size() - 1)) + 4 && k < note.getLine(0).getWords().size(); k++)
-                {
-
-                  showNotes[i] += note.getLine(0).getWord(k).getWord() + " ";
-                }
-
-                showNotes[i] += "...";
-                i++;
-              } else
-              {
-
-                showNotes[i] = actor.toString() + ". ";
-
-                for (int k = 1; k < 6 && k < note.getLine (0).getWords().size(); k++)
-                {
-
-                  showNotes[i] += note.getLine(0).getWord(k).getWord() + " ";
-                }
-
-                showNotes[i] += "... ";
-
-                for (int k = note.getLine (0).getWords().indexOf(note.getWord(0)) - 3; k < note.getLine(0).getWords().indexOf(note.getWord(0)); k++)
-                {
-
-                  if (k >= 0)
-                    showNotes[i] += note.getLine(0).getWord(k).getWord() + " ";
-                }
-
-                for (Word word : note.getLine (0).getWords())
-                {
-
-                  if (note.getWords().indexOf(word) != -1)
-                    showNotes[i] += word.getWord().toUpperCase() + " ";
-                }
-
-                i++;
-
-                for (int k = 1; k < note.getLines ().size() - 1; k++)
-                {
-
-                  showNotes[i] = note.getLine(k).getActor().toString() + ".";
-
-                  for (Word word : note.getLine (k).getWords())
-                  {
-
-                    showNotes[i] += word.getWord().toUpperCase() + " ";
-                  }
-
-                  i++;
-                }
-
-                showNotes[i] = note.getLine(note.getLines().size() - 1).getActor().toString() + ".";
-
-                for (Word word : note.getWords ())
-                {
-
-                  if (note.getLine(note.getLines().size() - 1).getWords().indexOf(word) != -1)
-                    showNotes[i] += word.getWord().toUpperCase() + " ";
-                }
-
-                for (int k = note.getLine (note.getLines ().size() - 1).getWords().indexOf(note.getWord(note.getWords().size() - 1)) + 1; k < note.getLine(note.getLines().size() - 1).getWords().indexOf(note.getWord(note.getWords().size() - 1)) + 4 && k < note.getLine(note.getLines().size() - 1).getWords().size(); k++)
-                {
-
-                  showNotes[i] += note.getLine(note.getLines().size() - 1).getWord(k).getWord() + " ";
-                }
-
-                showNotes[i] += "...";
-                i++;
-              }
-
-              break;
-
-            case 1:
-
-              showNotes[i] = "Page " + note.getLine(0).getPage();
-              i++;
-
-              if (note.getLines().size() == 1)
-              {
-
-                showNotes[i] = actor.toString() + ". ";
-
-                for (int k = 1; k < 6 && k < note.getLine (0).getWords().size(); k++)
-                {
-
-                  showNotes[i] += note.getLine(0).getWord(k).getWord() + " ";
-                }
-
-                showNotes[i] += "... ";
-
-                for (int k = note.getLine (0).getWords().indexOf(note.getWord(0)) - 3; k < note.getLine(0).getWords().indexOf(note.getWord(0)); k++)
-                {
-
-                  if (k >= 0)
-                    showNotes[i] += note.getLine(0).getWord(k).getWord() + " ";
-                }
-
-                for (Word word : note.getWords ())
-                {
-
-                  showNotes[i] += word.getWord().toUpperCase() + " ";
-                }
-
-                for (int k = note.getLine (0).getWords().indexOf(note.getWord(note.getWords().size() - 1)) + 1; k < note.getLine(0).getWords().indexOf(note.getWord(note.getWords().size() - 1)) + 4 && k < note.getLine(0).getWords().size(); k++)
-                {
-
-                  showNotes[i] += note.getLine(0).getWord(k).getWord() + " ";
-                }
-
-                showNotes[i] += "...";
-                showNotes[i + 1] = "ACTOR SAID: " + note.getSaid();
-                i += 2;
-              } else
-              {
-
-                showNotes[i] = actor.toString() + ". ";
-
-                for (int k = 1; k < 6 && k < note.getLine (0).getWords().size(); k++)
-                {
-
-                  showNotes[i] += note.getLine(0).getWord(k).getWord() + " ";
-                }
-
-                showNotes[i] += "... ";
-
-                for (int k = note.getLine (0).getWords().indexOf(note.getWord(0)) - 3; k < note.getLine(0).getWords().indexOf(note.getWord(0)); k++)
-                {
-
-                  if (k >= 0)
-                    showNotes[i] += note.getLine(0).getWord(k).getWord() + " ";
-                }
-
-                for (Word word : note.getLine (0).getWords())
-                {
-
-                  if (note.getWords().indexOf(word) != -1)
-                    showNotes[i] += word.getWord().toUpperCase() + " ";
-                }
-
-                i++;
-
-                for (int k = 1; k < note.getLines ().size() - 1; k++)
-                {
-
-                  showNotes[i] = note.getLine(k).getActor().toString() + ".";
-
-                  for (Word word : note.getLine (k).getWords())
-                  {
-
-                    showNotes[i] += word.getWord().toUpperCase() + " ";
-                  }
-
-                  i++;
-                }
-
-                showNotes[i] = note.getLine(note.getLines().size() - 1).getActor().toString() + ".";
-
-                for (Word word : note.getWords ())
-                {
-
-                  if (note.getLine(note.getLines().size() - 1).getWords().indexOf(word) != -1)
-                    showNotes[i] += word.getWord().toUpperCase() + " ";
-                }
-
-                for (int k = note.getLine (note.getLines ().size() - 1).getWords().indexOf(note.getWord(note.getWords().size() - 1)) + 1; k < note.getLine(note.getLines().size() - 1).getWords().indexOf(note.getWord(note.getWords().size() - 1)) + 4 && k < note.getLine(note.getLines().size() - 1).getWords().size(); k++)
-                {
-
-                  showNotes[i] += note.getLine(note.getLines().size() - 1).getWord(k).getWord() + " ";
-                }
-
-                showNotes[i] += "...";
-                showNotes[i + 1] = "ACTOR SAID: " + note.getSaid();
-                i += 2;
-              }
-
-              break;
-
-            case 2:
-
-              showNotes[i] = "Page " + note.getLine(0).getPage() + ", CALLED FOR LINE:";
-              i++;
-
-              if (note.getLines().size() == 1)
-              {
-
-                showNotes[i] = actor.toString() + ". ";
-
-                for (int k = 1; k < 6 && k < note.getLine (0).getWords().size(); k++)
-                {
-
-                  showNotes[i] += note.getLine(0).getWord(k).getWord() + " ";
-                }
-
-                showNotes[i] += "... ";
-
-                for (int k = note.getLine (0).getWords().indexOf(note.getWord(0)) - 3; k < note.getLine(0).getWords().indexOf(note.getWord(0)); k++)
-                {
-
-                  if (k >= 0)
-                    showNotes[i] += note.getLine(0).getWord(k).getWord() + " ";
-                }
-
-                for (Word word : note.getWords ())
-                {
-
-                  showNotes[i] += word.getWord().toUpperCase() + " ";
-                }
-
-                for (int k = note.getLine (0).getWords().indexOf(note.getWord(note.getWords().size() - 1)) + 1; k < note.getLine(0).getWords().indexOf(note.getWord(note.getWords().size() - 1)) + 4 && k < note.getLine(0).getWords().size(); k++)
-                {
-
-                  showNotes[i] += note.getLine(0).getWord(k).getWord() + " ";
-                }
-
-                showNotes[i] += "...";
-                i++;
-              } else
-              {
-
-                showNotes[i] = actor.toString() + ". ";
-
-                for (int k = 1; k < 6 && k < note.getLine (0).getWords().size(); k++)
-                {
-
-                  showNotes[i] += note.getLine(0).getWord(k).getWord() + " ";
-                }
-
-                showNotes[i] += "... ";
-
-                for (int k = note.getLine (0).getWords().indexOf(note.getWord(0)) - 3; k < note.getLine(0).getWords().indexOf(note.getWord(0)); k++)
-                {
-
-                  if (k >= 0)
-                    showNotes[i] += note.getLine(0).getWord(k).getWord() + " ";
-                }
-
-                for (Word word : note.getLine (0).getWords())
-                {
-
-                  if (note.getWords().indexOf(word) != -1)
-                    showNotes[i] += word.getWord().toUpperCase() + " ";
-                }
-
-                i++;
-
-                for (int k = 1; k < note.getLines ().size() - 1; k++)
-                {
-
-                  showNotes[i] = note.getLine(k).getActor().toString() + ".";
-
-                  for (Word word : note.getLine (k).getWords())
-                  {
-
-                    showNotes[i] += word.getWord().toUpperCase() + " ";
-                  }
-
-                  i++;
-                }
-
-                showNotes[i] = note.getLine(note.getLines().size() - 1).getActor().toString() + ".";
-
-                for (Word word : note.getWords ())
-                {
-
-                  if (note.getLine(note.getLines().size() - 1).getWords().indexOf(word) != -1)
-                    showNotes[i] += word.getWord().toUpperCase() + " ";
-                }
-
-                for (int k = note.getLine (note.getLines ().size() - 1).getWords().indexOf(note.getWord(note.getWords().size() - 1)) + 1; k < note.getLine(note.getLines().size() - 1).getWords().indexOf(note.getWord(note.getWords().size() - 1)) + 4 && k < note.getLine(note.getLines().size() - 1).getWords().size(); k++)
-                {
-
-                  showNotes[i] += note.getLine(note.getLines().size() - 1).getWord(k).getWord() + " ";
-                }
-
-                showNotes[i] += "...";
-                i++;
-              }
-
-              break;
-
-            case 3:
-
-              showNotes[i] = "Page " + note.getLine(0).getPage() + ", MISSED CUE:";
-              i++;
-
-              if (note.getLines().size() == 1)
-              {
-
-                showNotes[i] = actor.toString() + ". ";
-
-                for (int k = 1; k < 6 && k < note.getLine (0).getWords().size(); k++)
-                {
-
-                  showNotes[i] += note.getLine(0).getWord(k).getWord() + " ";
-                }
-
-                showNotes[i] += "... ";
-
-                for (int k = note.getLine (0).getWords().indexOf(note.getWord(0)) - 3; k < note.getLine(0).getWords().indexOf(note.getWord(0)); k++)
-                {
-
-                  if (k >= 0)
-                    showNotes[i] += note.getLine(0).getWord(k).getWord() + " ";
-                }
-
-                for (Word word : note.getWords ())
-                {
-
-                  showNotes[i] += word.getWord().toUpperCase() + " ";
-                }
-
-                for (int k = note.getLine (0).getWords().indexOf(note.getWord(note.getWords().size() - 1)) + 1; k < note.getLine(0).getWords().indexOf(note.getWord(note.getWords().size() - 1)) + 4 && k < note.getLine(0).getWords().size(); k++)
-                {
-
-                  showNotes[i] += note.getLine(0).getWord(k).getWord() + " ";
-                }
-
-                showNotes[i] += "...";
-                i++;
-              } else
-              {
-
-                showNotes[i] = actor.toString() + ". ";
-
-                for (int k = 1; k < 6 && k < note.getLine (0).getWords().size(); k++)
-                {
-
-                  showNotes[i] += note.getLine(0).getWord(k).getWord() + " ";
-                }
-
-                showNotes[i] += "... ";
-
-                for (int k = note.getLine (0).getWords().indexOf(note.getWord(0)) - 3; k < note.getLine(0).getWords().indexOf(note.getWord(0)); k++)
-                {
-
-                  if (k >= 0)
-                    showNotes[i] += note.getLine(0).getWord(k).getWord() + " ";
-                }
-
-                for (Word word : note.getLine (0).getWords())
-                {
-
-                  if (note.getWords().indexOf(word) != -1)
-                    showNotes[i] += word.getWord().toUpperCase() + " ";
-                }
-
-                i++;
-
-                for (int k = 1; k < note.getLines ().size() - 1; k++)
-                {
-
-                  showNotes[i] = note.getLine(k).getActor().toString() + ".";
-
-                  for (Word word : note.getLine (k).getWords())
-                  {
-
-                    showNotes[i] += word.getWord().toUpperCase() + " ";
-                  }
-
-                  i++;
-                }
-
-                showNotes[i] = note.getLine(note.getLines().size() - 1).getActor().toString() + ".";
-
-                for (Word word : note.getWords ())
-                {
-
-                  if (note.getLine(note.getLines().size() - 1).getWords().indexOf(word) != -1)
-                    showNotes[i] += word.getWord().toUpperCase() + " ";
-                }
-
-                for (int k = note.getLine (note.getLines ().size() - 1).getWords().indexOf(note.getWord(note.getWords().size() - 1)) + 1; k < note.getLine(note.getLines().size() - 1).getWords().indexOf(note.getWord(note.getWords().size() - 1)) + 4 && k < note.getLine(note.getLines().size() - 1).getWords().size(); k++)
-                {
-
-                  showNotes[i] += note.getLine(note.getLines().size() - 1).getWord(k).getWord() + " ";
-                }
-
-                showNotes[i] += "...";
-                i++;
-              }
-
-              break;
+              byte[] t = n.toString().getBytes();
+              actorNotes.write(t);
+              allNotes.write(t);
+            }
+            catch (Exception e)
+            {
+              e.printStackTrace();
+              continue;
             }
           }
         }
-
-        showNotes[i] = "";
-        i++;
       }
     }
-
-    saveStrings(prefix + "/NOTES.txt", showNotes);
     println("YAY YOU SAVED!");
     saved = true;
   }
@@ -2632,7 +2236,7 @@ class Script
   {
     return(new PVector(Float.parseFloat(s.substring(2, s.indexOf(","))), Float.parseFloat(s.substring(s.indexOf(",") + 2, s.indexOf(",", s.indexOf(",") + 1)))));
   }
-  
+
   void exit()
   {
     set_script_null();

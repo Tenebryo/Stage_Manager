@@ -162,12 +162,13 @@ void file_selected(File f)
   }
 }
 
-void mkFile(String path) throws IOException
+File mkFile(String path) throws IOException
 {
   File dir = new File(path.replaceFirst("[/\\\\][^/\\\\]+$", ""));
   dir.mkdirs();
   File t = new File(path);
   t.createNewFile();
+  return t;
 }
 
 void mousePressed()

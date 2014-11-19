@@ -32,4 +32,28 @@ class MissedCueNote extends Note
     
   }
   
+  String toString()
+  {
+    String str = "MISSED CUE, PAGE "+str(lines.get(0).getPage())+"\n\tLINE:\n\t\t";
+    
+    for(Line l : lines)
+    {
+      for(Word w : l.getWords())
+      {
+        str += w.getWord() + " ";
+      }
+      str += "\n\t";
+    }
+    str += "MISSED:\n\t... ";
+    
+    for(Word w : words)
+    {
+      str += w.getWord() + " ";
+    }
+    
+    str += " ...\n\n";
+    
+    return str;
+  }
+  
 }

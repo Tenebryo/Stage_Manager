@@ -46,4 +46,32 @@ class ParaphraseNote extends Note
     
   }
   
+  String toString()
+  {
+    String str = "CALLED FOR LINE, PAGE "+str(lines.get(0).getPage())+"\n\tLINE:\n\t\t";
+    
+    for(Line l : lines)
+    {
+      for(Word w : l.getWords())
+      {
+        str += w.getWord() + " ";
+      }
+      str += "\n\t";
+    }
+    str += "ACTOR SAID:\n\t";
+    
+    str += said;
+    
+    str +="\nINSTEAD OF:\n\t\t... ";
+    
+    for(Word w : words)
+    {
+      str += w.getWord() + " ";
+    }
+    
+    str += " ...\n\n";
+    
+    return str;
+  }
+  
 }

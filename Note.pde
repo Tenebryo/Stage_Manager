@@ -124,4 +124,9 @@ class Note
     
   }
   
+  String toString()
+  {
+    return "";
+  }
+  
 }

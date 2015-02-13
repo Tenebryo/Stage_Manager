@@ -1,221 +1,161 @@
-class Line
-{
+class Script {
+  ArrayList<Scene> scenes;
+  ArrayList<Page> pages;
+  ArrayList<Line> lines, unPaged, unScened;
+  ArrayList<Actor> actors;
   
-  //Variable declarations
-  protected ArrayList<Word> words;
-  protected Actor actor;
-  protected int actorPos;
-  //posOnPage describes the Line's position relative to the beginning of the Page.
-  protected PVector posOnPage;
-  protected int page;
+  Script () {
+    scenes = new ArrayList();
+    pages  = new ArrayList();
+    lines  = new ArrayList();
+    actors = new ArrayList();
+    unPaged  = new ArrayList();
+    unScened = new ArrayList();
+  }
   
-  //Constructors
-  //Default Constructor
-  Line()
-  {
-    
-    words = new ArrayList<Word>();
-    posOnPage = new PVector();
+  void fromString(String str) {
     
   }
   
-  //Page number and Actor Constructor
-  Line(Actor a, int p)
-  {
+  String toString() {
+    String obj = "";
     
-    words = new ArrayList<Word>();
-    actor = a;
-    posOnPage = new PVector();
-    page = p;
-    
-  }
-  
-  //Full Constructor
-  Line(ArrayList<Word> w, Actor a, int p)
-  {
-    
-    words = w;
-    actor = a;
-    posOnPage = new PVector();
-    page = p;
-    
-  }
-  
-  //Full Constructor creates words from String
-  Line(String s, Actor a, int p)
-  {
-    
-    words = new ArrayList<Word>();
-    
-    for(String word : s.split(" "))
-    {
-      
-      words.add(new Word(word));
-      
+    obj += line.size();
+    for(Line l : lines) {
+      obj += l + "\n";
     }
     
-    actor = a;
-    posOnPage = new PVector();
-    page = p;
+    obj += scenes.size();
     
+    obj += pages.size();
+    
+    
+    return obj;
   }
   
-  //Constructor for loading in
-  Line(Actor a, int p, PVector pos)
-  {
-    
-    words = new ArrayList<Word>();
-    actor = a;
-    page = p;
-    posOnPage = pos;
-    
-  }
-  
-  //Get and set page number
-  int getPage()
-  {
-    
-    return page;
-    
-  }
-  
-  void setPage(int p)
-  {
-    
-    page = p;
-    
-  }
-  
-  //Get and set words (or Words in words)
-  ArrayList<Word> getWords()
-  {
-    
-    return words;
-    
-  }
-  
-  Word getWord(int i)
-  {
-    
-    return words.get(i);
-    
-  }
-  
-  void setWords(ArrayList<Word> w)
-  {
-    
-    words = w;
-    
-  }
-  
-  void setWord(int i, Word word)
-  {
-    
-    if(i < words.size())
-      words.set(i, word);
-    
-  }
-  
-  void setWord(int i, String word)
-  {
-    
-    if(i < words.size())
-      words.set(i, new Word(word));
-    
-  }
-  
-  //Add to words
-  void addWord(Word word)
-  {
-    
-    words.add(word);
-    
-  }
-  
-  void addWord(String word)
-  {
-    
-    words.add(new Word(word));
-    
-  }
-  
-  void addWord(int i, String word)
-  {
-    
-    words.add(i, new Word(word));
-    
-  }
-  
-  Word removeWord(int i)
-  {
-    
-    return words.remove(i);
-    
-  }
-  
-  //Get and set actor
-  Actor getActor()
-  {
-    
-    return actor;
-    
-  }
-  
-  void setActor(Actor a)
-  {
-    
-    actor = a;
-    
-  }
-  
-  //Get and set actorPos
-  int getActorPos()
-  {
-    
-    return actorPos;
-    
-  }
-  
-  void setActorPos(int p)
-  {
-    
-    actorPos = p;
-    
-  }
-  
-  //Get and set posOnPage
-  PVector getPos()
-  {
-    
-    return posOnPage;
-    
-  }
-  
-  void setPos(float x, float y)
-  {
-    
-    posOnPage.set(x, y);
-    
-  }
-  
-  //toString
-  String toString()
-  {
-    
-    String toReturn = "";
-    toReturn += actor.charName + ".";
-    
-    for(Word word : words)
-    {
-      
-      toReturn += word + " ";
-      
+  void appendLine(Line l) {
+    lines.add(l);
+    if(scenes.size() > 0) {
+      scenes.get(scenes.size()-1).addLine(l);
+    } else {
+      unScened.add(l);
     }
-    
-    toReturn += "(" + page + ")";
-    
-    return toReturn;
-    
+    if(pages.size() > 0) {
+      pages.get(pages.size()-1).addLine(l);
+    } else {
+      unPaged.add(l);
+    }
   }
   
+  void addScene(Scene s) {
+    scenes.add(s);
+  }
+  
+  void addPage(Page p) {
+    pages.add(p);
+  }
+  
+  void addActor(Actor a) {
+    for (Actor t : actors) {
+      if (t.name.equals(a.name)) {
+        return;
+      }
+    }
+    actors.add(a);
+  }
+  
+  void clear() {
+    scenes.clear();
+    pages.clear();
+    lines.clear();
+    actors.clear();
+    unPaged.clear();
+    unScened.clear();
+  }
+}
+
+class Scene {
+  ArrayList<Line> lines;
+  String title, description;
+  
+  Scene(String _title, String _desc) {
+    title = _title;
+    description = _desc;
+    lines = new ArrayList();
+  }
+  
+  void addLine(Line l) {
+    lines.add(l);
+  }
+}
+
+class Actor {
+  String name;
+  
+  Actor(String _name) {
+    name = _name;
+  }
+}
+
+class Page {
+  ArrayList<Line> lines;
+  int pageNumber;
+  
+  Page(int _pgnum) {
+    pageNumber = _pgnum;
+    lines = new ArrayList();
+  }
+  
+  void addLine(Line l) {
+    lines.add(l);
+  }
+}
+
+class Line {
+  String text;
+  String actor;
+  int numLines, textHeight, lineNum;
+  
+  Line(String a, String t, int lineNum) {
+    text = t;
+    actor = a;
+  }
+  void calculateHeights(int w, int th, PGraphics g) {
+    numLines = numLinesHeight(text, w, g);
+    textHeight = (numLines*th) + 10;
+  }
+  
+  String toString() {
+    return actor + "\n" + text;
+  }
+}
+
+int numLinesHeight(String str, int w, PGraphics g) {
+  String[] t = splitTokens(str, " ");
+  int h = 1;
+  float lineW = 0;
+  for(String s : t) {
+    float wid = g.textWidth(s);
+    if(wid > w) {
+      h++;
+      float strw=0;
+      for(char c : s.toCharArray()) {
+        float cwid = g.textWidth(c);
+        if(strw + cwid > w) {
+          strw = cwid;
+          h++;
+        } else {
+          strw += cwid;
+        }
+      } 
+      
+      lineW = strw;
+    } else if(lineW + wid > w) {
+      h++;
+      lineW = wid;
+    }else {
+      lineW += wid;
+    }
+  }
+  return max(h, 1);
 }

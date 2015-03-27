@@ -16,3 +16,10 @@ Known Bugs:
 -Sometimes particular Scripts will not appear in the Script List view
 -Many performance increases are possible at this point, and they will gradually be added 
 -Errors in storing of Line Notes, so they will not be exported again if you close and open the Script
+
+Rewrite in progress!
+
+Author: Sam Blazes
+Planned version number 4.0
+
+Rewriting it to make adding new features smoother. Progress is in branch 'rewrite'

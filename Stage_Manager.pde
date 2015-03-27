@@ -1,12 +1,16 @@
 import java.io.*;
 import java.util.*;
 import java.nio.channels.*;
+import java.util.concurrent.Semaphore;
 
+String recentScripts = "./data/recent.dat";
 
 //PFont font = loadFont("Roboto-Regular-48.vlw");
 UIObject root;
 PGraphics rootGraphics;
 UIFileParamAction onFileOpen;
+
+int lineHeight = 24;
 
 boolean sketchFullScreen() {
   return true;
@@ -15,8 +19,13 @@ boolean sketchFullScreen() {
 boolean done = false;
 
 void setup() {
+  try {
+    loadStrings(recentScripts);
+  } catch (Exception e) {
+    saveStrings(recentScripts, new String[0]);
+  }
   size(displayWidth, displayHeight);
-  root = new ScriptLoader(null);
+  root = new MainMenu(null);
   rootGraphics = createGraphics(displayWidth, displayHeight);
   done = true;
   //textFont(font);

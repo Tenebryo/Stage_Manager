@@ -1,161 +1,82 @@
-class Script {
-  ArrayList<Scene> scenes;
-  ArrayList<Page> pages;
-  ArrayList<Line> lines, unPaged, unScened;
-  ArrayList<Actor> actors;
-  
-  Script () {
-    scenes = new ArrayList();
-    pages  = new ArrayList();
-    lines  = new ArrayList();
-    actors = new ArrayList();
-    unPaged  = new ArrayList();
-    unScened = new ArrayList();
-  }
-  
-  void fromString(String str) {
-    
-  }
-  
-  String toString() {
-    String obj = "";
-    
-    obj += line.size();
-    for(Line l : lines) {
-      obj += l + "\n";
-    }
-    
-    obj += scenes.size();
-    
-    obj += pages.size();
-    
-    
-    return obj;
-  }
-  
-  void appendLine(Line l) {
-    lines.add(l);
-    if(scenes.size() > 0) {
-      scenes.get(scenes.size()-1).addLine(l);
-    } else {
-      unScened.add(l);
-    }
-    if(pages.size() > 0) {
-      pages.get(pages.size()-1).addLine(l);
-    } else {
-      unPaged.add(l);
-    }
-  }
-  
-  void addScene(Scene s) {
-    scenes.add(s);
-  }
-  
-  void addPage(Page p) {
-    pages.add(p);
-  }
-  
-  void addActor(Actor a) {
-    for (Actor t : actors) {
-      if (t.name.equals(a.name)) {
-        return;
-      }
-    }
-    actors.add(a);
-  }
-  
-  void clear() {
-    scenes.clear();
-    pages.clear();
-    lines.clear();
-    actors.clear();
-    unPaged.clear();
-    unScened.clear();
-  }
-}
-
-class Scene {
-  ArrayList<Line> lines;
-  String title, description;
-  
-  Scene(String _title, String _desc) {
-    title = _title;
-    description = _desc;
-    lines = new ArrayList();
-  }
-  
-  void addLine(Line l) {
-    lines.add(l);
-  }
-}
-
-class Actor {
-  String name;
-  
-  Actor(String _name) {
-    name = _name;
-  }
-}
-
-class Page {
-  ArrayList<Line> lines;
-  int pageNumber;
-  
-  Page(int _pgnum) {
-    pageNumber = _pgnum;
-    lines = new ArrayList();
-  }
-  
-  void addLine(Line l) {
-    lines.add(l);
-  }
-}
-
 class Line {
   String text;
   String actor;
+  ArrayList<String> displayLines;
   int numLines, textHeight, lineNum;
-  
-  Line(String a, String t, int lineNum) {
+  int ypos = 0, hightlightStart = 0, highlightEnd = 0; 
+  PGraphics lastG;
+
+  Line(String a, String t, int lNum) {
+    displayLines = new ArrayList();
     text = t;
     actor = a;
+    lineNum = lNum;
   }
-  void calculateHeights(int w, int th, PGraphics g) {
-    numLines = numLinesHeight(text, w, g);
-    textHeight = (numLines*th) + 10;
-  }
-  
-  String toString() {
-    return actor + "\n" + text;
-  }
-}
 
-int numLinesHeight(String str, int w, PGraphics g) {
-  String[] t = splitTokens(str, " ");
-  int h = 1;
-  float lineW = 0;
-  for(String s : t) {
-    float wid = g.textWidth(s);
-    if(wid > w) {
-      h++;
-      float strw=0;
-      for(char c : s.toCharArray()) {
-        float cwid = g.textWidth(c);
-        if(strw + cwid > w) {
-          strw = cwid;
-          h++;
-        } else {
-          strw += cwid;
+  String toString() {
+    String ret = "Line\n" +  actor + "\n" + text;
+    return ret;
+  }
+
+  Line(ArrayList<String> strs) throws Exception {
+    if (!strs.get(0).equals("Line")) {
+      throw new Exception("Line");
+    }
+    displayLines = new ArrayList();
+    strs.remove(0);
+    actor = strs.remove(0);
+    text = strs.remove(0);
+  }
+
+  void splitLines(PGraphics g) {
+    String cl = "";
+    int w = g.width-110;
+
+    displayLines.clear();
+    String[] t = splitTokens(text, " ");
+    for (String s : t) {
+      float t0 = g.textWidth(s), t1 = g.textWidth(cl);
+      if (t0 > w) {
+
+        displayLines.add(cl);
+        cl = "";
+        String temp = s;
+        while (g.textWidth (temp) > w) {
+          int i = 0;
+          while (g.textWidth (temp.substring (0, i)) < w) {
+            i++;
+          }
+          temp = temp.substring(i-1);
+          displayLines.add(temp.substring(0, i-1));
         }
-      } 
-      
-      lineW = strw;
-    } else if(lineW + wid > w) {
-      h++;
-      lineW = wid;
-    }else {
-      lineW += wid;
+        cl = temp;
+      } else if (t0 + t1 > w) {
+
+        displayLines.add(cl);
+        cl = s;
+      } else {
+        cl += " " + s;
+      }
+    }
+
+    displayLines.add(cl);
+
+    textHeight = (displayLines.size()+1)*lineHeight;
+    numLines = displayLines.size();
+  }
+
+  void draw(PGraphics g) {
+    if (lastG == null || lastG != g) {
+      splitLines(g);
+      lastG = g;
+    }
+    g.textAlign(RIGHT, TOP);
+    g.text(actor, 100, ypos);
+    g.textAlign(LEFT, TOP);
+    int h = ypos;
+    for (String s : displayLines) { 
+      g.text(s, 110, h);
+      h += lineHeight;
     }
   }
-  return max(h, 1);
 }

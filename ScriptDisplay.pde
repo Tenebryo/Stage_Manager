@@ -19,13 +19,16 @@ class ScriptDisplay extends UIFullscreenObject {
   ScriptDisplay(Wrapper<UIObject> _p) {
     super(_p);
     scriptGraphics = createGraphics(width - 300, height - 100);
-
+  
+    //exit button
     elem.add(new UIButton(W-110, 5, 100, 40, "Exit").setOnClicked(new UIAction() {
       public void execute() {
         exitUIObject();
       }
     }
     ));
+    
+    //buttons for creating notes
 
     elem.add(new UIScrollBar(W - 20, 90, 10, H - 100, 0.5, scriptScrollAlpha));
   }
@@ -36,6 +39,11 @@ class ScriptDisplay extends UIFullscreenObject {
 
   void drawSelf(int w, int h, PGraphics g) {
     g.background(0x21);
+
+    if (selected != null && selected.finished) {
+      g.textAlign(LEFT, BOTTOM);
+      g.text(selected.selectedText, W-10, H-10);
+    }
 
     renderScript(scriptGraphics);
     g.image(scriptGraphics, scriptX, scriptY);
@@ -64,7 +72,7 @@ class ScriptDisplay extends UIFullscreenObject {
       if (selected != null) {
         selected.draw(g);
       }
-      
+
       g.fill(0xE0);
 
       for (Line l : script.lines) {

@@ -57,33 +57,40 @@ class LineSelection {
 
   void finish(PGraphics g) {
     selectedText = "";
+    int selectBuf = 10;
     try {
       int h = 0;
-      int i = 0;
+      int i = -1;
       //find the line where the selection starts
       while (h < tbY) {
+        i++;
         Line ln = s.lines.get(i);
         int lHeight = ln.textHeight;
 
         if (h + lHeight >= tbY) {
           int lineSelectStart = (int)((h+lHeight - tbY)/lineHeight);
+          //space between lines has been selected
+          if (lineSelectStart >= ln.displayLines.size()) {
+            break;
+          }
 
           //get the index within the entire string that the selection can start at
+          int j;
           int lnStartIndex = 0;
-          for (int j = 0; j < lineSelectStart; j++) {
+          for (j = 0; j < lineSelectStart; j++) {
             lnStartIndex += ln.displayLines.get(j).length();
           }
 
           //get the character where the selection starts
           int dispLnLen = 0;
           String dispLn = ln.displayLines.get(lineSelectStart);
-          for (int j = 0; j < dispLn.length (); j++) {
+          for (j = 0; j < dispLn.length (); j++) {
             dispLnLen += dispLn.charAt(j);
             if (dispLnLen > tbX - 110) { //TODO: make less hard-coded, currently uses a number that could change and that this class does not have a way to access 
-              lnStartIndex += j;
               break;
             }
           }
+          lnStartIndex += j;
 
           //check if the end is within the same Line
           if (h + lHeight >= teY) {
@@ -91,43 +98,78 @@ class LineSelection {
 
             //get the index within the entire string that the selection can start at
             int lnEndIndex = 0;
-            for (int j = 0; j < lineSelectEnd; j++) {
+            for (j = 0; j < lineSelectEnd; j++) {
               lnEndIndex += ln.displayLines.get(j).length();
             }
 
             //get the character where the selection ends
             dispLnLen = 0;
             dispLn = ln.displayLines.get(lineSelectEnd);
-            for (int j = 0; j < dispLn.length (); j++) {
+            for (j = 0; j < dispLn.length (); j++) {
               dispLnLen += g.textWidth(dispLn.charAt(j));
               if (dispLnLen > tbX - 110) { //TODO: make less hard-coded, currently uses a number that could change and that this class does not have a way to access 
-                lnEndIndex += j;
                 break;
               }
             }
+            lnEndIndex += j;
             //add the selection to the selected text from the start of the selection to the end of the selection and return (the entire selection is covered)
-            selectedText += ((lnStartIndex < 20)?ln.actor.name + ": ":ln.actor.name+": ...") + ln.text.substring(max(0, lnStartIndex-20), lnEndIndex-max(0, lnStartIndex-20)) + (()?:);
+            //add ellipses and a bit extra of the text if there is text before the selection
+            selectedText += ((lnStartIndex < selectBuf)?ln.actor + ": ":ln.actor+": ...") + 
+              ln.text.substring(max(0, lnStartIndex-selectBuf), min(ln.text.length() - max(0, lnStartIndex-selectBuf), lnEndIndex-max(0, lnStartIndex-selectBuf)+selectBuf)) + 
+              ((lnEndIndex + 20 >= ln.text.length())?"\n":"...");
             return;
           } else {
             //add the text to the selected string from the start to the end of the line.
-            selectedText += (()?:) + ln.text.substring(lnStartIndex) + "\n";
+            selectedText += ((lnStartIndex < selectBuf)?ln.actor + ": ":ln.actor+": ...") + ln.text.substring(max(0,lnStartIndex-selectBuf)) + "\n";
           }
         }
 
         h += lHeight;
-        i++;
       }
-      selected.add(s.lines.get(i));
-      i++;
+
+      //add intermediary lines
       while (h < eY || h < bY) {
-        h += s.lines.get(i).textHeight;
-        selected.add(s.lines.get(i));
         i++;
+        Line ln = s.lines.get(i);
+        h += ln.textHeight;
+        if (h < eY || h < bY) {
+          selectedText += ln.actor + ": " + ln.text + "\n";
+        }
       }
+
+      Line ln = s.lines.get(i);
+      //add part/all of last line
+      int lineSelectEnd = (int)((h+ln.textHeight - teY)/lineHeight);
+
+      //get the index within the entire string that the selection can start at
+      int lnEndIndex = 0;
+      for (int j = 0; j < lineSelectEnd; j++) {
+        lnEndIndex += ln.displayLines.get(j).length();
+      }
+
+      //get the character where the selection ends
+      int j;
+      int dispLnLen = 0;
+      String dispLn = ln.displayLines.get(lineSelectEnd);
+      for (j = 0; j < dispLn.length (); j++) {
+        dispLnLen += g.textWidth(dispLn.charAt(j));
+        if (dispLnLen > tbX - 110) { //TODO: make less hard-coded, currently uses a number that could change and that this class does not have a way to access (maybe make the actor draw space and the line draw space separate
+          break;
+        }
+      }
+      lnEndIndex += j;
+      //add the selection to the selected text from the start of the selection to the end of the selection and return (the entire selection is covered)
+      //add ellipses and a bit extra of the text if there is text before the selection
+      selectedText += ln.actor + ": " + 
+        ln.text.substring(0, min(ln.text.length(), lnEndIndex+selectBuf)) + 
+        ((lnEndIndex + selectBuf >= ln.text.length())?"\n":"...");
+      return;
     }
     catch(IndexOutOfBoundsException e) {
+      println("Error:", e.getMessage());
     }
     finished = true;
+    println("Selection Finished:\n", selectedText);
   }
 }
 

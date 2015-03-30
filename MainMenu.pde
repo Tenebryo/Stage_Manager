@@ -72,6 +72,7 @@ class MainMenu extends UIFullscreenObject {
     g.textAlign(RIGHT, BOTTOM);
     g.text("Created by Sam Blazes", W-10, H-10);
 
+
     super.drawSelf(w, h, g);
   }
 }

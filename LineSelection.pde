@@ -54,6 +54,157 @@ class LineSelection {
       tbX = tmp;
     }
   }
+  
+  //gets the index of the line at height sHeight in the stack of Lines
+  int getLineIndexFromHeight(int sHeight) {
+    int h = 0;
+    int i = 0;
+    for (Line l : s.lines) {
+      if(h+l.textHeight >= sHeight) {
+        break;
+      }
+      h+=l.textHeight;
+      i++;
+    }
+    return i;
+  }
+  
+  //gets the vertical distance from the start of the line 
+  //the selection point is in to the selection point
+  int getSelectPositionFromHeight(int sHeight) {
+    int h = 0;
+    for (Line l : s.lines) {
+      if(h+l.textHeight >= sHeight) {
+        break;
+      }
+      h+=l.textHeight;
+    }
+    return sHeight - h;
+  }
+  
+  //get the Line object that is at the selection point
+  Line getLineFromHeight(int sHeight) {
+    int h = 0;
+    for (Line l : s.lines) {
+      if(h+l.textHeight >= sHeight) {
+        return l;
+      }
+      h+=l.textHeight;
+    }
+    return null;
+  }
+  
+  //get the text of the selected string from the start 
+  //of a selection point within the line to the end of the line
+  String getLineSelectionStringAllFromStart(Line l, int relHeight, int xOffset, PGraphics g) {
+    //which display line the select falls on
+    int dLineIndex = int(relHeight/lineHeight);
+    
+    //the result string we will build
+    String result = l.actor + ": ";
+    
+    //display line
+    String dpLine = l.displayLines.get(dLineIndex);
+    //last space index 0 and 1
+    //keep track of the second to last ' ' found in the string
+    int lSpaceI0 = 0, lSpaceI1 = 0;
+    //add the segment of text
+    for (int i = 0, w = 0; i < dpLine.length(); i++) {
+      if (dpLine.charAt(i) == ' ') {
+        lSpaceI0 = lSpaceI1;
+        lSpaceI1 = i;
+      }
+      int charWidth = int(g.textWidth(dpLine.charAt(i)));
+      if(w + charWidth < xOffset) {
+        result += dpLine.substring(lSpaceI0);
+        break;
+      }
+    }
+    
+    //add the rest of the line
+    for (int i = dLineIndex + 1; i < l.displayLines.size(); i++) {
+      result += l.displayLines.get(i);
+    }
+    
+    return result;
+  }
+  
+  //get all text that would be selected if selecting from
+  //start of the line to a specific point within the line
+  String getLineSelectionStringAllToEnd(Line l, int relHeight, int xOffset, PGraphics g) {
+    //which display line the select falls on
+    int dLineIndex = int(relHeight/lineHeight);
+    
+    //the result string we will build
+    String result = l.actor + ": ";
+    
+    //add all lines until the one where the selection ends
+    for (int i = 0; i < dLineIndex; i++) {
+      result += l.displayLines.get(i);
+    }
+    
+    //display line
+    String dpLine = l.displayLines.get(dLineIndex);
+    //add the segment of text
+    for (int i = 0, w = 0; i < dpLine.length(); i++) {
+      int charWidth = int(g.textWidth(dpLine.charAt(i)));
+      if(w + charWidth < xOffset) {
+        int spaceLoc = dpLine.substring(i).indexOf(' ');
+        result += dpLine.substring(0, ((spaceLoc==-1)?dpLine.length():i+spaceLoc) );
+        break;
+      }
+    }
+    
+    return result;
+  }
+  
+  //get the text that is selected between two points within the line
+  String getLineSelectionStringPartial(Line l, int relHeight0, int xOffset0, int relHeight1, int xOffset1, PGraphics g) {
+    //which display line the select falls on
+    int dLineIndex0 = int(relHeight0/lineHeight);
+    int dLineIndex1 = int(relHeight1/lineHeight);
+    
+    //the result string we will build
+    String result = l.actor + ": ";
+    
+    //display line
+    String dpLine0 = l.displayLines.get(dLineIndex0);
+    //last space index 0 and 1
+    //keep track of the second to last ' ' found in the string
+    int lSpaceI0 = 0, lSpaceI1 = 0;
+    //add the segment of text
+    for (int i = 0, w = 0; i < dpLine0.length(); i++) {
+      if (dpLine0.charAt(i) == ' ') {
+        lSpaceI0 = lSpaceI1;
+        lSpaceI1 = i;
+      }
+      int charWidth = int(g.textWidth(dpLine0.charAt(i)));
+      if(w + charWidth < xOffset0) {
+        result += dpLine0.substring(lSpaceI0);
+        break;
+      }
+    }
+    
+    //add the rest of the line
+    for (int i = dLineIndex0 + 1; i < dLineIndex1; i++) {
+      result += l.displayLines.get(i);
+    }
+    
+    
+    //display line
+    String dpLine1 = l.displayLines.get(dLineIndex1);
+    //add the last segment of text
+    for (int i = 0, w = 0; i < dpLine1.length(); i++) {
+      int charWidth = int(g.textWidth(dpLine1.charAt(i)));
+      if(w + charWidth < xOffset1) {
+        int spaceLoc = dpLine1.substring(i).indexOf(' ');
+        result += dpLine1.substring(0, ((spaceLoc==-1)?dpLine1.length():i+spaceLoc) );
+        break;
+      }
+    }
+    
+    return result;
+  }
 
   void finish(PGraphics g) {
     selectedText = "";

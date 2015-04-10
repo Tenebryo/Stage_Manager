@@ -6,7 +6,7 @@ class Note {
     note = n;
   }
   
-  Note(ArrayList<String> strs) {
+  Note(ArrayList<String> strs) throws Exception {
     if(!strs.get(0).equals("Note")) {
       throw new Exception("Note Parsing Error: Not a Note");
     }

@@ -60,8 +60,9 @@ class Line {
     }
 
     displayLines.add(cl);
+    displayLines.add("");
 
-    textHeight = (displayLines.size()+1)*lineHeight;
+    textHeight = (displayLines.size())*lineHeight;
     numLines = displayLines.size();
   }
 
@@ -78,5 +79,23 @@ class Line {
       g.text(s, 110, h);
       h += lineHeight;
     }
+  }
+  
+  void drawText(PGraphics g) {
+    if (lastG == null || lastG != g) {
+      splitLines(g);
+      lastG = g;
+    }
+    g.textAlign(LEFT, TOP);
+    int h = 0;
+    for (String s : displayLines) { 
+      g.text(s, 0, h);
+      h += lineHeight;
+    }
+  }
+  
+  void drawActor(PGraphics g) {
+    g.textAlign(RIGHT, TOP);
+    g.text(actor, g.width, 0);
   }
 }

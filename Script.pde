@@ -1,59 +1,71 @@
 class Script {
+  String filename;
   ArrayList<Scene> scenes;
   ArrayList<Page> pages;
   ArrayList<Line> lines, unPaged, unScened;
   ArrayList<Actor> actors;
+  ArrayList<Rehearsal> rehearsals;
 
   int scriptHeight = 0;
 
   //empty constructor
-  Script () {
+  Script (String filename) {
+    this.filename = filename;
     scenes = new ArrayList();
     pages  = new ArrayList();
     lines  = new ArrayList();
     actors = new ArrayList();
     unPaged  = new ArrayList();
     unScened = new ArrayList();
+    rehearsals = new ArrayList();
   }
 
   //this constructor builds from an array of strings representing the lines
   //of an appropriately formatted script file
-  Script(ArrayList<String> strs) throws Exception {
+  Script(ArrayList<String> strs, String filename) throws Exception {
 
+    this.filename = filename;
     scenes = new ArrayList();
     pages  = new ArrayList();
     lines  = new ArrayList();
     actors = new ArrayList();
     unPaged  = new ArrayList();
     unScened = new ArrayList();
+    rehearsals = new ArrayList();
 
     if (!strs.get(0).equals("Script")) {
       throw new Exception("Script");
     }
 
     strs.remove(0);
-    int n = Integer.parseInt(strs.remove(0));
+    int n = int(strs.remove(0));
     println(n, "Lines...");
     for (int i = 0; i < n; i++) {
       this.appendLine(new Line(strs));
     }
 
-    n = Integer.parseInt(strs.remove(0));
+    n = int(strs.remove(0));
     println(n, "Scenes...");
     for (int i = 0; i < n; i++) {
       this.addScene(new Scene(strs));
     }
 
-    n = Integer.parseInt(strs.remove(0));
+    n = int(strs.remove(0));
     println(n, "Pages...");
     for (int i = 0; i < n; i++) {
       this.addPage(new Page(strs));
     }
 
-    n = Integer.parseInt(strs.remove(0));
+    n = int(strs.remove(0));
     println(n, "Actors...");
     for (int i = 0; i < n; i++) {
       this.addActor(new Actor(strs));
+    }
+    
+    n = int(strs.remove(0));
+    println(n, "Rehearsals...");
+    for (int i = 0; i < n; i++) {
+      this.addRehearsal(new Rehearsal(strs));
     }
 
     println("Done!");
@@ -80,6 +92,11 @@ class Script {
     obj += actors.size() + "\n";
     for (Actor a : actors) {
       obj += a + "\n";
+    }
+    
+    obj += rehearsals.size() + "\n";
+    for (Rehearsal r : rehearsals) {
+      obj += r + "\n";
     }
 
     return obj;
@@ -124,6 +141,10 @@ class Script {
     actors.clear();
     unPaged.clear();
     unScened.clear();
+  }
+  
+  void addRehearsal(Rehearsal r) {
+    rehearsals.add(0, r);
   }
 }
 

@@ -10,7 +10,7 @@ class ScriptLoader extends UIFullscreenObject {
   Semaphore scriptMutex = new Semaphore(1, true);
   UIContainerElement actorMergeCheckBoxList;
 
-  final Script script = new Script();
+  final Script script = new Script("");
 
   public ScriptLoader(Wrapper<UIObject> _p) {
     super(_p); 
@@ -24,6 +24,7 @@ class ScriptLoader extends UIFullscreenObject {
             println(f.getAbsolutePath());
             //load lines from selected file
             String[] loadedLines = loadStrings(f.getAbsolutePath());
+            script.filename = f.getAbsolutePath();
             try {
               //Make sure we are not using a list in two places at once
               //Search for "Java Semaphores" for more info
@@ -135,7 +136,7 @@ class ScriptLoader extends UIFullscreenObject {
     elem.add(new UIScrollBar(W/3 - 20, 90, 10, H - 100, 0.5, actorScrollAlpha));
     elem.add(new UIScrollBar(W - 20, 90, 10, H - 100, 0.5, scriptScrollAlpha));
 
-    actorMergeCheckBoxList = new UIContainerElement();
+    actorMergeCheckBoxList = new UIContainerElement() {void update(){}};
     elem.add(actorMergeCheckBoxList);
 
     listG = createGraphics(W/3 - 30, H - 100);

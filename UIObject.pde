@@ -58,8 +58,10 @@ class UIObject {
 
   boolean keyPressed(char key) {
     if (next.value() == null || !next.value().keyPressed(key)) {
-      for (UIElement e : elem) {
-        e.keyPressed(key);
+      for (int i = elem.size()-1; i >= 0; i--) {
+        if(elem.get(i).keyPressed(key)) {
+          break;
+        }
       }
       selfKeyPressed(key);
       return blocking;
@@ -69,8 +71,10 @@ class UIObject {
 
   boolean mousePressed() {
     if (next.value() == null || !next.value().mousePressed()) {
-      for (UIElement e : elem) {
-        e.mousePressed();
+      for (int i = elem.size()-1; i >= 0; i--) {
+        if(elem.get(i).mousePressed()) {
+          break;
+        }
       }
       selfMousePressed();
       return blocking;
@@ -80,8 +84,10 @@ class UIObject {
 
   boolean mouseReleased() {
     if (next.value() == null || !next.value().mouseReleased()) {
-      for (UIElement e : elem) {
-        e.mouseReleased();
+      for (int i = elem.size()-1; i >= 0; i--) {
+        if(elem.get(i).mouseReleased()) {
+          break;
+        }
       }
       selfMouseReleased();
       return blocking;
@@ -91,8 +97,10 @@ class UIObject {
 
   boolean mouseClicked() {
     if (next.value() == null || !next.value().mouseClicked()) {
-      for (UIElement e : elem) {
-        e.mouseClicked();
+      for (int i = elem.size()-1; i >= 0; i--) {
+        if(elem.get(i).mouseClicked()) {
+          break;
+        }
       }
       selfMouseClicked();
       return blocking;
@@ -102,8 +110,10 @@ class UIObject {
 
   boolean mouseDragged() {
     if (next.value() == null || !next.value().mouseDragged()) {
-      for (UIElement e : elem) {
-        e.mouseDragged();
+      for (int i = elem.size()-1; i >= 0; i--) {
+        if(elem.get(i).mouseDragged()) {
+          break;
+        }
       }
       selfMouseDragged();
       return blocking;
@@ -113,8 +123,10 @@ class UIObject {
 
   boolean mouseWheel(MouseEvent evt) {
     if (next.value() == null || !next.value().mouseWheel(evt)) {
-      for (UIElement e : elem) {
-        e.mouseWheel(evt);
+      for (int i = elem.size()-1; i >= 0; i--) {
+        if(elem.get(i).mouseWheel(evt)) {
+          break;
+        }
       }
       selfMouseWheel(evt);
       return blocking;
@@ -136,8 +148,8 @@ class UIObject {
   }
 
   void drawSelf(int w, int h, PGraphics g) {
-    for (UIElement e : elem) {
-      e.draw(g);
+    for (int i = 0; i < elem.size(); i++) {
+        elem.get(i).draw(g);
     }
   }
 

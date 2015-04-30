@@ -24,6 +24,7 @@ class Scene {
 
   void addLine(Line l) {
     lines.add(l.lineNum);
+    Collections.sort(lines);
   }
 
   String toString() {
@@ -33,6 +34,18 @@ class Scene {
       ret += l + " ";
     }
     return ret;
+  }
+  
+  void drawScene(PGraphics g) {
+    g.pushMatrix();
+    g.textAlign(RIGHT, TOP);
+    g.textSize(20);
+    g.text(title, g.width, 0);
+    
+    g.textSize(16);
+    g.translate(0, lineHeight);
+    g.text(description, g.width, 0);
+    g.popMatrix();
   }
 }
 

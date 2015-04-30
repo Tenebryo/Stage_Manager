@@ -10,13 +10,11 @@ class MainMenu extends UIFullscreenObject {
         onFileOpen = new UIFileParamAction() {
           //runs when the file is selected
           public void execute(File f) {
-            ScriptDisplay sd = new ScriptDisplay(next);
             try {
-              sd.loadScript(new Script(new ArrayList(Arrays.asList(loadStrings(f.getAbsolutePath())))));
+              next.value(new ScriptDisplay(next, new Script(new ArrayList(Arrays.asList(loadStrings(f.getAbsolutePath()))), f.getAbsolutePath())));
             }
             catch(Exception e) {
             }
-            next.value(sd);
           }
         };
         selectInput("Select Script File", "fileOpenedCallBack");
@@ -35,7 +33,9 @@ class MainMenu extends UIFullscreenObject {
 
     String[] recents = loadStrings(recentScripts);
 
-    UIContainerElement recentContainer = new UIContainerElement();
+    UIContainerElement recentContainer = new UIContainerElement() {
+      void update() {}
+    };
     int _h = 100;
     for (String s : recents) {
       final String fs = s;
@@ -43,14 +43,12 @@ class MainMenu extends UIFullscreenObject {
         //run when the button is clicked
         public void execute() {
           println(fs);
-          ScriptDisplay sd = new ScriptDisplay(next);
           try {
-            sd.loadScript(new Script(new ArrayList(Arrays.asList(loadStrings(fs)))));
+            next.value(new ScriptDisplay(next, new Script(new ArrayList(Arrays.asList(loadStrings(fs))), fs)));
           }
           catch(Exception e) {
             println(e.getMessage());
           }
-          next.value(sd);
         }
       }
       ));

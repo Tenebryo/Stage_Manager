@@ -1,6 +1,7 @@
 class Note {
   
-  String note;
+  int lineNum;
+  String note, extra_info;
   
   Note(String n) {
     note = n;
@@ -14,6 +15,6 @@ class Note {
   }
   
   String toString() {
-    return "Note\n";
+    return "Note\n" + lineNum + "\n" + note + "\n" + extra_info;
   }
 }

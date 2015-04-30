@@ -31,6 +31,12 @@ class Page {
 
   void addLine(Line l) {
     lines.add(l.lineNum);
+    Collections.sort(lines);
+  }
+  
+  void drawPage(PGraphics g) {
+    g.textAlign(RIGHT, TOP);
+    g.text(pageNumber, g.width, 0);
   }
 }
 

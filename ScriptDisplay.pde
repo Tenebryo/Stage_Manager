@@ -7,6 +7,7 @@ class ScriptDisplay extends UIFullscreenObject {
   Semaphore scriptMutex = new Semaphore(1, true);
   //script scroll percent
   final Wrapper<Float> scriptScrollAlpha = new Wrapper<Float>(0.0);
+  final Wrapper<String> noteType = new Wrapper("");
   final Wrapper<ArrayList<UIElement>> wElems = new Wrapper<ArrayList<UIElement>>(null);
 
   //position of the script panel
@@ -19,21 +20,21 @@ class ScriptDisplay extends UIFullscreenObject {
   final Wrapper<Script> wScript = new Wrapper<Script>(null);
   final Wrapper<Rehearsal> currentRehearsal = new Wrapper<Rehearsal>(null);
   int displayMode = 0;
-  
-  ScriptDisplay(Wrapper<UIObject> _p, Script s) {
-    super(_p);
+
+  ScriptDisplay(Wrapper<UIObject> _p, Wrapper<Window> win, Script s) {
+    super(_p, win);
     wElems.value(elem);
     loadScript(s);
     init();
   }
-  
+
   void init() {
-    
+
     scrollHeight = H-100;
-    
+
     int dW = max(0, W-340);
     int x = W-ceil(0.50*dW)-20;
-    
+
     line = new Window(x, 90, ceil(0.50*dW), scrollHeight, null);
     x -= ceil(0.11*dW); 
     actor = new Window(x, 90, ceil(0.11*dW), scrollHeight, null);
@@ -41,7 +42,7 @@ class ScriptDisplay extends UIFullscreenObject {
     scene = new Window(x, 90, ceil(0.33*dW), scrollHeight, null);
     x -= ceil(0.056*dW);
     page = new Window(x, 90, ceil(0.056*dW), scrollHeight, null);
-  
+
     //exit button
     elem.add(new UIButton(W-110, 5, 100, 40, "Exit").setOnClicked(new UIAction() {
       public void execute() {
@@ -49,15 +50,16 @@ class ScriptDisplay extends UIFullscreenObject {
       }
     }
     ));
-    
+
     x -= 20;
-    
+
     //add/choose current rehearsal
-    elem.add(new UISuperButton(10, 90, x, 40, "Choose Rehearsal") {
+    elem.add(new UISuperButton(10, 90, x, 40, "Choose Rehearsal...") {
       UIElement rSelector;
       public void onClicked() {
         //create rehearsal dialogue
         final int _X = x, _Y = y, _W = w, _H = h;
+        final Wrapper<UISuperButton> wButton = new Wrapper<UISuperButton>(this);
         final Wrapper<UIElement> wThis = new Wrapper<UIElement>(null);
         rSelector = new UIContainerElement() {
           int s = 0;
@@ -66,13 +68,14 @@ class ScriptDisplay extends UIFullscreenObject {
             elems.add(new UISuperButton(_X, _Y, _W/3, _H, "<") {
               public void onClicked() {
                 //advance to previous page of Rehearsals
-                if(s-10 >= 0) {
+                if (s-10 >= 0) {
                   s -= 10;
                   elems.clear();
                   init();
                 }
               }
-            });
+            }
+            );
             elems.add(new UISuperButton(_X + _W/3, _Y, _W/3+1, _H, "New") {
               public void onClicked() {
                 //add a new Rehearsal
@@ -81,38 +84,46 @@ class ScriptDisplay extends UIFullscreenObject {
                 wScript.value().addRehearsal(new Rehearsal(df.format(d), "Rehearsal " + df.format(d)));
                 wElems.value().remove(wThis.value());
               }
-            });
+            }
+            );
             elems.add(new UISuperButton(_X + _W*2/3, _Y, _W/3+1, _H, ">") {
               public void onClicked() {
                 //advance to next page of Rehearsals
-                if(s+10 < wScript.value().rehearsals.size()) {
+                if (s+10 < wScript.value().rehearsals.size()) {
                   s += 10;
                   elems.clear();
                   init();
                 }
               }
-            });
+            }
+            );
             int i;
-            for (i = 1; i < 10 && i+s < wScript.value().rehearsals.size(); i++) {
+            for (i = 1; i < 10 && i+s < wScript.value ().rehearsals.size(); i++) {
               final Rehearsal r = wScript.value().rehearsals.get(i+s);
               elems.add(new UISuperButton(_X, _Y+_H*i, _W, _H, r.label) {
                 public void onClicked() {
+                  //set the current rehearsal to the this rehearsal
                   currentRehearsal.value(r);
+                  //set the text of the button to the rehearsal's lable
+                  wButton.value().text = r.label;
+                  //stop displaying the rehearsal selector
                   wElems.value().remove(wThis.value());
                 }
-              });
+              }
+              );
             }
           }
           public void update() {
-            if(mouseX < _X || mouseY < _Y || mouseX > _X+_W || mouseY > _Y+min(11, wScript.value().rehearsals.size()-s+1)*_H) {
+            if (mouseX < _X || mouseY < _Y || mouseX > _X+_W || mouseY > _Y+min(11, wScript.value().rehearsals.size()-s+1)*_H) {
               wElems.value().remove(this);
             }
           }
         };
         wElems.value().add(rSelector);
       }
-    });
-    
+    }
+    );
+
     //save script button
     elem.add(new UISuperButton(10, 140, x, 40, "Save Progress") {
       public void onClicked() {
@@ -120,13 +131,15 @@ class ScriptDisplay extends UIFullscreenObject {
         t[0] = script.toString();
         saveStrings(script.filename, t);
       }
-    });
-    
+    }
+    );
+
     //add note button
-    elem.add(new UISuperButton(10, 190, x, 40, "Add Note") {
+    elem.add(new UISuperButton(10, 190, x, 40, "Choose Note Type...") {
       UIElement rSelector;
       public void onClicked() {
         final int _X = x, _Y = y, _W = w, _H = h;
+        final Wrapper<UISuperButton> wButton = new Wrapper<UISuperButton>(this);
         final Wrapper<UIElement> wThis = new Wrapper<UIElement>(null);
         rSelector = new UIContainerElement() {
           int s = 0;
@@ -134,34 +147,92 @@ class ScriptDisplay extends UIFullscreenObject {
             wThis.value(this);
             elems.add(new UISuperButton(_X, _Y, _W, _H, "Called for Line") {
               public void onClicked() {
+                //stop displaying the note type selector
                 wElems.value().remove(wThis.value());
+                //change the button text to the selected type
+                wButton.value().text = "Called for Line";
+                //set flag for current note type
+                noteType.value("Called for Line Note");
               }
-            });
+            }
+            );
             elems.add(new UISuperButton(_X, _Y + _H, _W, _H, "Missed Cue") {
               public void onClicked() {
+                //stop displaying the note type selector
                 wElems.value().remove(wThis.value());
+                //change the button text to the selected type
+                wButton.value().text = "Missed Cue";
+                //set flag for current note type
+                noteType.value("Missed Cue Note");
               }
-            });
+            }
+            );
             elems.add(new UISuperButton(_X, _Y + _H + _H, _W, _H, "Skipped") {
               public void onClicked() {
+                //stop displaying the note type selector
                 wElems.value().remove(wThis.value());
+                //change the button text to the selected type
+                wButton.value().text = "Skipped";
+                //set flag for current note type
+                noteType.value("Skipped Note");
               }
-            });
-            elems.add(new UISuperButton(_X, _Y + _H + _H + _H, _W, _H, "Other") {
+            }
+            );
+            elems.add(new UISuperButton(_X, _Y + _H + _H + _H, _W, _H, "Custom") {
               public void onClicked() {
+                //stop displaying the note type selector
                 wElems.value().remove(wThis.value());
+                //change the button text to the selected type
+                wButton.value().text = "Custom";
+                //set flag for current note type
+                noteType.value("Custom Note");
               }
-            });
+            }
+            );
           }
           public void update() {
-            if(mouseX < _X || mouseY < _Y || mouseX > _X+_W || mouseY > _Y+min(11, wScript.value().rehearsals.size()-s+1)*_H) {
+            if (mouseX < _X || mouseY < _Y || mouseX > _X+_W || mouseY > _Y+4*_H) {
+              //close the note type selector if the mouse leaves the area
               wElems.value().remove(this);
             }
           }
         };
         wElems.value().add(rSelector);
       }
-    });
+    }
+    );
+
+    final Wrapper<UITextBox> wTextBox = new Wrapper<UITextBox>(new UITextBox(10, 240, x, H-400, "Enter Note Description...") {
+    }
+    );
+    final Wrapper<UIObject> wScriptDisplay = new Wrapper<UIObject>(this);
+
+    elem.add(wTextBox.value());
+
+    elem.add(new UISuperButton(10, H-100, x, 40, "Create Note") {
+      public void onClicked() {
+        if (currentRehearsal.value() == null) {
+          next.value(new UIPopupMsgBoxObject(wScriptDisplay.value().next, wWin, "You Must Select a Rehearsal", int(0.375*W), int(0.375*H), int(W/4.0), int(H/4.0)){
+            int lifetime = 300;
+            public boolean test() {
+              return (lifetime-- < 0);
+            }
+          });
+          println("Error: You Must Select a Rehearsal");
+        } else if (noteType.equals("")) {
+          next.value(new UIPopupMsgBoxObject(wScriptDisplay.value().next, wWin, "You Must Select a Note Type", int(0.375*W), int(0.375*H), int(W/4.0), int(H/4.0)));
+          println("Error: You Must Select a Note Type");
+        } else if (selected == null) {
+          next.value(new UIPopupMsgBoxObject(wScriptDisplay.value().next, wWin, "You Must Select Some Text", int(0.375*W), int(0.375*H), int(W/4.0), int(H/4.0)));
+          println("Error: You Must Select Some Text");
+        } else {
+          currentRehearsal.value().addNote(new Note(noteType.value(), wTextBox.value().text, selected.selectedText, 0, 0, selected.selected));
+          wTextBox.value().setText("");
+          println("Note Created!");
+        }
+      }
+    }
+    );
 
     elem.add(new UIScrollBar(W - 20, 90, 10, H - 100, 0.5, scriptScrollAlpha));
   }
@@ -194,7 +265,6 @@ class ScriptDisplay extends UIFullscreenObject {
     g.beginDraw();
 
     g.background(0x42);
-
     g.stroke(0x61);
 
     g.pushMatrix();
@@ -231,12 +301,11 @@ class ScriptDisplay extends UIFullscreenObject {
 
     g.endDraw();
   }
-  
+
   void renderActors(PGraphics g) {
     g.beginDraw();
 
     g.background(0x42);
-
     g.stroke(0x61);
 
     g.pushMatrix();
@@ -268,12 +337,11 @@ class ScriptDisplay extends UIFullscreenObject {
 
     g.endDraw();
   }
-  
+
   void renderScenes(PGraphics g) {
     g.beginDraw();
 
     g.background(0x42);
-
     g.stroke(0x61);
 
     g.pushMatrix();
@@ -290,7 +358,7 @@ class ScriptDisplay extends UIFullscreenObject {
       g.fill(0xE0);
 
       for (Scene s : script.scenes) {
-        for(int j = 0; j < s.lines.get(0); j++) {
+        for (int j = 0; j < s.lines.get (0); j++) {
           g.translate(0, script.lines.get(j).textHeight);
         } 
         s.drawScene(g);
@@ -307,7 +375,7 @@ class ScriptDisplay extends UIFullscreenObject {
 
     g.endDraw();
   }
-  
+
   void renderPages(PGraphics g) {
     g.beginDraw();
 
@@ -329,7 +397,7 @@ class ScriptDisplay extends UIFullscreenObject {
       g.fill(0xE0);
 
       for (Page p : script.pages) {
-        for(int j = 0; j < p.lines.get(0); j++) {
+        for (int j = 0; j < p.lines.get (0); j++) {
           g.translate(0, script.lines.get(j).textHeight);
         }
         p.drawPage(g);

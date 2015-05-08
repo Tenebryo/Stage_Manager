@@ -15,6 +15,7 @@ UIElement is a class that handles user input, such as text boxes,
  //*/
 abstract class UIElement {
   int x, y, w, h;
+  boolean debug = false;
 
   UIElement(int _x, int _y, int _w, int _h) {
     x = _x;
@@ -27,9 +28,15 @@ abstract class UIElement {
     focus = this;
   }
 
+  void removeFocus() {
+    if (focus == this) {
+      focus = null;
+    }
+  }
+
   abstract void draw(PGraphics g);
 
-  boolean keyPressed(char key) { 
+  boolean keyPressed(char key) {
     return false;
   }
   boolean mousePressed() {
@@ -53,16 +60,23 @@ abstract class UIElement {
 }
 
 class UITextBox extends UIContainerElement {
+  final Wrapper<String> wText = new Wrapper<String>("");
   String text, helpText;
   int maxLen, cursorPos;
   boolean focusOnly = true;
   Window textArea;
   Wrapper<Float> scrollPos;
+  Semaphore mutex = new Semaphore(1, true);
 
   UITextBox (int _x, int _y, int _w, int _h, String _helpText) {
     super();
+    x = _x;
+    y = _y;
+    w = _w;
+    h = _h;
     cursorPos = 0;
     helpText = _helpText;
+    text = "";
     textArea = new Window(_x, _y, _w, _h, null);
     scrollPos = new Wrapper<Float>(0.0);
     elems.add(new UIScrollBar(_w-10, 0, 10, _h, 0.5, scrollPos));
@@ -74,59 +88,75 @@ class UITextBox extends UIContainerElement {
   }
 
   boolean mouseClicked() {
-    if (mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y+h) {
+    if (p_rectIntersect(mouseX, mouseY, x, y, w, h)) {
       setAsFocus();
+    } else {
+      removeFocus();
     }
     return super.mouseClicked();
   }
 
   boolean keyPressed(char key) {
-    if ((focusOnly && focus == this) || !focusOnly) {
-      if (key == CODED) {
-        if (key == LEFT && cursorPos > 0) {
-          cursorPos--;
-        } else if (key == RIGHT && key < text.length()) {
+    if (focus == this || !focusOnly) {
+      try {
+        mutex.acquire();
+        if (key == CODED) {
+          if (key == LEFT && cursorPos > 0) {
+            cursorPos--;
+          } else if (key == RIGHT && cursorPos < text.length()) {
+            cursorPos++;
+          }
+        } else if (key == ENTER || key == RETURN) {
+          submit();
+        } else if (key == DELETE) {
+          text = text.substring(0, max(0, cursorPos-1)) + text.substring(min(cursorPos+1, text.length()));
+        } else if (key == BACKSPACE) {
+          text = text.substring(0, max(0, cursorPos-1)) + text.substring(cursorPos);
+          if (cursorPos > 0) {
+            cursorPos--;
+          }
+        } else if (key == ESC) {
+          removeFocus();
+        } else if ((int)key >= 32 && (int)key <= 126) {
+          text = text.substring(0, cursorPos) + key + text.substring(min(cursorPos+1, text.length()));
           cursorPos++;
         }
-      } else if (key == ENTER || key == RETURN) {
-        submit();
-      } else if (key == BACKSPACE) {
-        text = text.substring(0, max(0, cursorPos-2)) + text.substring(cursorPos);
-      } else if (key == DELETE) {
-        text = text.substring(0, max(0, cursorPos-1)) + text.substring(min(cursorPos+1, text.length()));
-      } else if (key == ESC) {
-        if (focus == this) {
-          destroyFocus();
-        }
-      } else if((int)key >= 32 && (int)key <= 126) {
-        text = text.substring(0, cursorPos) + key + text.substring(min(cursorPos+1, text.length()));
+        mutex.release();
+      } 
+      catch (InterruptedException e) {
       }
     }
+    println("Text: ", text);
     return super.keyPressed(key);
   }
-  
-  void submit() {}
+
+  void submit() {
+  }
+  void update() {
+  }
 
   void draw(PGraphics g) {
     PGraphics TAg = textArea.getGraphics();
     TAg.beginDraw();
-    
+
     TAg.background(0x42);
     TAg.noStroke();
     TAg.fill(0xE0);
     TAg.rect(x, y+h-2, w, 2, 0, 0, 2, 2); 
-    TAg.textAlign(LEFT, BOTTOM);
+    TAg.textAlign(LEFT, TOP);
     TAg.stroke(0xFF);
-    
+
     String[] dLines = getDisplayLines(text, w-20, TAg);
     TAg.translate(0, -max(0, dLines.length*lineHeight-h)*scrollPos.value());
-    for(int i = 0; i < dLines.length; i++) {
-      text(dLines[i], 5, i*lineHeight);
+    for (int i = 0; i < dLines.length; i++) {
+      TAg.text(dLines[i], 5, i*lineHeight);
     }
     super.draw(TAg);
-    
+
     TAg.endDraw();
     textArea.draw(g);
+
+    update();
   }
 }
 
@@ -179,7 +209,7 @@ class UIButton extends UIElement {
   void draw(PGraphics g) {
     g.noStroke();
     g.fill(0x19, 0x76, 0xD2);
-    if(p_rectIntersect(mouseX, mouseY, x, y, w, h)) {
+    if (p_rectIntersect(mouseX, mouseY, x, y, w, h)) {
       g.fill(0x10, 0x54, 0x96);
     }
     g.rect(x, y, w, h);
@@ -198,11 +228,14 @@ class UISuperButton extends UIElement {
     text = _text;
   }
 
-  void onClicked() {};
+  void onClicked() {
+  };
 
-  void onPressed() {};
+  void onPressed() {
+  };
 
-  void onReleased() {};
+  void onReleased() {
+  };
 
   boolean mousePressed() {
     if (mouseX >= x && mouseX <= x + w && mouseY >= y && mouseY <= y+h) {
@@ -229,7 +262,7 @@ class UISuperButton extends UIElement {
   void draw(PGraphics g) {
     g.noStroke();
     g.fill(0x19, 0x76, 0xD2);
-    if(p_rectIntersect(mouseX, mouseY, x, y, w, h)) {
+    if (p_rectIntersect(mouseX, mouseY, x, y, w, h)) {
       g.fill(0x10, 0x54, 0x96);
     }
     g.rect(x, y, w, h);
@@ -347,9 +380,11 @@ class UIContainerElement extends UIElement {
   void add(UIElement e) {
     elems.add(e);
   }
-  
-  void update() {};
-  void init() {};
+
+  void update() {
+  };
+  void init() {
+  };
 
   void draw(PGraphics g) {
     for (UIElement e : elems) {
@@ -360,7 +395,7 @@ class UIContainerElement extends UIElement {
 
   boolean keyPressed(char key) {
     for (UIElement e : elems) {
-      if(e.keyPressed(key)) {
+      if (e.keyPressed(key)) {
         return true;
       }
     }
@@ -368,7 +403,7 @@ class UIContainerElement extends UIElement {
   }
   boolean mousePressed() {
     for (UIElement e : elems) {
-      if(e.mousePressed()) {
+      if (e.mousePressed()) {
         return true;
       }
     }
@@ -376,7 +411,7 @@ class UIContainerElement extends UIElement {
   }
   boolean mouseReleased() {
     for (UIElement e : elems) {
-      if(e.mouseReleased()) {
+      if (e.mouseReleased()) {
         return true;
       }
     }
@@ -384,7 +419,7 @@ class UIContainerElement extends UIElement {
   }
   boolean mouseClicked() {
     for (UIElement e : elems) {
-      if(e.mouseClicked()) {
+      if (e.mouseClicked()) {
         return true;
       }
     }
@@ -392,7 +427,7 @@ class UIContainerElement extends UIElement {
   }
   boolean mouseWheel(MouseEvent event) {
     for (UIElement e : elems) {
-      if(e.mouseWheel(event)) {
+      if (e.mouseWheel(event)) {
         return true;
       }
     }
@@ -400,7 +435,7 @@ class UIContainerElement extends UIElement {
   }
   boolean mouseDragged() {
     for (UIElement e : elems) {
-      if(e.mouseDragged()) {
+      if (e.mouseDragged()) {
         return true;
       }
     }
@@ -408,7 +443,7 @@ class UIContainerElement extends UIElement {
   }
   boolean mouseMoved() {
     for (UIElement e : elems) {
-      if(e.mouseMoved()) {
+      if (e.mouseMoved()) {
         return true;
       }
     }

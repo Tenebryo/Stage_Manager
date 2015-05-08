@@ -12,8 +12,8 @@ class ScriptLoader extends UIFullscreenObject {
 
   final Script script = new Script("");
 
-  public ScriptLoader(Wrapper<UIObject> _p) {
-    super(_p); 
+  public ScriptLoader(Wrapper<UIObject> _p, Wrapper<Window> win) {
+    super(_p, win); 
     //*
     elem.add(new UIButton(W-330, 5, 100, 40, "Select Script").setOnClicked(new UIAction() {
       //Callback for when the button is clicked

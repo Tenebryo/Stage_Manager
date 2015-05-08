@@ -8,6 +8,7 @@
 class UIObject {
   ArrayList<UIElement> elem;
 
+  final Wrapper<Window> wWin = new Wrapper<Window>(null);
   //Wrapped reference to next, so the next object can exit itself
   final Wrapper<UIObject> next = new Wrapper<UIObject>(null);
   //Wrapped refernce to this object, so this object can erase the reference to itself
@@ -21,9 +22,12 @@ class UIObject {
   float transition;
   int transState;
 
-  UIObject (Wrapper<UIObject> _h, int w, int h) {
+  UIObject (Wrapper<UIObject> _h, Wrapper<Window> win, int x, int y, int w, int h) {
     W = w; 
     H = h;
+    
+    wWin.value(new Window(x, y, w, h, win.value()));
+      
     handle = _h;
     transparent = false;
     blocking = true;
@@ -48,18 +52,30 @@ class UIObject {
       return false;
   }
 
-  boolean draw (int w, int h, PGraphics g) {
-    if (next.value() == null || next.value().draw(w, h, g)) {
-      this.drawSelf(w, h, g);
-      return transparent;
+  boolean draw () {
+    boolean ret = false;
+    PGraphics g = wWin.value().beginDraw();
+    
+    if (next.value() == null || next.value().draw()) {
+      
+      this.drawSelf(g.width, g.height, g);
+      
+      ret = transparent;
     }
-    return false;
+    
+    if(next.value() != null) {
+      next.value().wWin.value().draw(g);
+    }
+      
+    wWin.value().endDraw();
+    
+    return ret;
   }
 
   boolean keyPressed(char key) {
     if (next.value() == null || !next.value().keyPressed(key)) {
-      for (int i = elem.size()-1; i >= 0; i--) {
-        if(elem.get(i).keyPressed(key)) {
+      for (int i = elem.size ()-1; i >= 0; i--) {
+        if (elem.get(i).keyPressed(key)) {
           break;
         }
       }
@@ -71,8 +87,8 @@ class UIObject {
 
   boolean mousePressed() {
     if (next.value() == null || !next.value().mousePressed()) {
-      for (int i = elem.size()-1; i >= 0; i--) {
-        if(elem.get(i).mousePressed()) {
+      for (int i = elem.size ()-1; i >= 0; i--) {
+        if (elem.get(i).mousePressed()) {
           break;
         }
       }
@@ -84,8 +100,8 @@ class UIObject {
 
   boolean mouseReleased() {
     if (next.value() == null || !next.value().mouseReleased()) {
-      for (int i = elem.size()-1; i >= 0; i--) {
-        if(elem.get(i).mouseReleased()) {
+      for (int i = elem.size ()-1; i >= 0; i--) {
+        if (elem.get(i).mouseReleased()) {
           break;
         }
       }
@@ -97,8 +113,8 @@ class UIObject {
 
   boolean mouseClicked() {
     if (next.value() == null || !next.value().mouseClicked()) {
-      for (int i = elem.size()-1; i >= 0; i--) {
-        if(elem.get(i).mouseClicked()) {
+      for (int i = elem.size ()-1; i >= 0; i--) {
+        if (elem.get(i).mouseClicked()) {
           break;
         }
       }
@@ -110,8 +126,8 @@ class UIObject {
 
   boolean mouseDragged() {
     if (next.value() == null || !next.value().mouseDragged()) {
-      for (int i = elem.size()-1; i >= 0; i--) {
-        if(elem.get(i).mouseDragged()) {
+      for (int i = elem.size ()-1; i >= 0; i--) {
+        if (elem.get(i).mouseDragged()) {
           break;
         }
       }
@@ -123,8 +139,8 @@ class UIObject {
 
   boolean mouseWheel(MouseEvent evt) {
     if (next.value() == null || !next.value().mouseWheel(evt)) {
-      for (int i = elem.size()-1; i >= 0; i--) {
-        if(elem.get(i).mouseWheel(evt)) {
+      for (int i = elem.size ()-1; i >= 0; i--) {
+        if (elem.get(i).mouseWheel(evt)) {
           break;
         }
       }
@@ -148,8 +164,8 @@ class UIObject {
   }
 
   void drawSelf(int w, int h, PGraphics g) {
-    for (int i = 0; i < elem.size(); i++) {
-        elem.get(i).draw(g);
+    for (int i = 0; i < elem.size (); i++) {
+      elem.get(i).draw(g);
     }
   }
 
@@ -159,11 +175,8 @@ class UIObject {
 }
 
 class UIFullscreenObject extends UIObject {
-  UIFullscreenObject(Wrapper<UIObject> _p) {
-    super(_p, width, height);
-  }
-  boolean draw(int w, int h, PGraphics g) {
-    return super.draw(width, height, g);
+  UIFullscreenObject(Wrapper<UIObject> _p, Wrapper<Window> win) {
+    super(_p, win, 0, 0, width, height);
   }
 }
 

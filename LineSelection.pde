@@ -208,6 +208,7 @@ class LineSelection {
         w += wordWidth;
       }
     } else {
+      
       //beginning partial Line
       result += beginStringAtLength(l.displayLines.get(max(l.displayLines.size()-1,dLineIndex0)), xOffset0, g);
 
@@ -231,18 +232,23 @@ class LineSelection {
 
     println(line0Offset, line1Offset); 
 
+    selected.clear();
     if (line0Index == line1Index)
     {
+      selected.add(s.lines.get(line0Index));
       selectedText = getLineSelectionStringPartial(s.lines.get(line0Index), line0Offset, tbX, line1Offset, teX, g);
     } else
     {
+      selected.add(s.lines.get(line0Index));
       selectedText = getLineSelectionStringAllFromStart(s.lines.get(line0Index), line0Offset, tbX, g);
 
       for (int i = line0Index+1; i < line1Index; i++) {
         Line ln = s.lines.get(i);
+        selected.add(ln);
         selectedText += ("\n" + ln.actor + ": " + ln.text);
       }
       
+      selected.add(s.lines.get(line1Index));
       selectedText += ("\n" + getLineSelectionStringAllToEnd(s.lines.get(line1Index), line1Offset, teX, g));
     }
     println(selectedText);

@@ -15,6 +15,10 @@ class Window {
   void draw(PGraphics pg) {
     pg.image(g, x, y);
   }
+  
+  void draw() {
+    image(g, x, y);
+  }
  
   PGraphics getGraphics() {
     return g;
@@ -32,5 +36,14 @@ class Window {
       return p.getMouseY() - y;
     }
     return mouseY - y;
+  }
+  
+  PGraphics beginDraw() {
+    g.beginDraw();
+    return g;
+  }
+  
+  void endDraw() {
+    g.endDraw();
   }
 }

@@ -8,7 +8,7 @@ String recentScripts = "./data/recent.dat";
 
 //PFont font = loadFont("Roboto-Regular-48.vlw");
 UIObject root;
-PGraphics rootGraphics;
+Window rootWindow;
 UIFileParamAction onFileOpen;
 
 int lineHeight = 24;
@@ -26,18 +26,19 @@ void setup() {
     saveStrings(recentScripts, new String[0]);
   }
   size(displayWidth, displayHeight);
-  root = new MainMenu(null);
-  rootGraphics = createGraphics(displayWidth, displayHeight);
+  rootWindow = new Window(0, 0, displayWidth, displayHeight, null);
+  root = new MainMenu(null, new Wrapper<Window>(rootWindow));
   done = true;
   //textFont(font);
 }
 
 void draw() {
   if(!done) return;
-  rootGraphics.beginDraw();
-  root.draw(width, height, rootGraphics);
-  rootGraphics.endDraw();
-  image(rootGraphics, 0, 0);
+  rootWindow.beginDraw();
+  root.draw();
+  root.wWin.value().draw(rootWindow.getGraphics());
+  rootWindow.endDraw();
+  rootWindow.draw();
 }
 
 void mousePressed() {
@@ -55,7 +56,7 @@ void mouseDragged() {
 void mouseWheel(MouseEvent evt) {
   root.mouseWheel(evt);
 }
-void keyPressed(char key) {
+void keyPressed() {
   root.keyPressed(key);
 }
 void fileOpenedCallBack(File f) {

@@ -1,8 +1,9 @@
 //provide a list of recent scripts, an open script file, and a create new script file
 
 class MainMenu extends UIFullscreenObject {
-  MainMenu(Wrapper<UIObject> _parent) {
-    super(_parent);
+  
+  MainMenu(Wrapper<UIObject> _parent, Wrapper<Window> win) {
+    super(_parent, win);
 
     elem.add(new UIButton(W/2, 100, W/2-10, 40, "Open Script").setOnClicked(new UIAction() {
       //runs when the button is clicked
@@ -11,7 +12,7 @@ class MainMenu extends UIFullscreenObject {
           //runs when the file is selected
           public void execute(File f) {
             try {
-              next.value(new ScriptDisplay(next, new Script(new ArrayList(Arrays.asList(loadStrings(f.getAbsolutePath()))), f.getAbsolutePath())));
+              next.value(new ScriptDisplay(next, wWin, new Script(new ArrayList(Arrays.asList(loadStrings(f.getAbsolutePath()))), f.getAbsolutePath())));
             }
             catch(Exception e) {
             }
@@ -26,7 +27,7 @@ class MainMenu extends UIFullscreenObject {
       //runs when the button is clicked
       public void execute() {
         //open new script dialogue
-        next.value(new ScriptLoader(next));
+        next.value(new ScriptLoader(next, wWin));
       }
     }
     ));
@@ -44,7 +45,7 @@ class MainMenu extends UIFullscreenObject {
         public void execute() {
           println(fs);
           try {
-            next.value(new ScriptDisplay(next, new Script(new ArrayList(Arrays.asList(loadStrings(fs))), fs)));
+            next.value(new ScriptDisplay(next, wWin, new Script(new ArrayList(Arrays.asList(loadStrings(fs))), fs)));
           }
           catch(Exception e) {
             println(e.getMessage());

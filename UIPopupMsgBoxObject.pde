@@ -19,15 +19,12 @@ class UIPopupMsgBoxObject extends UIObject {
       exitUIObject();
       return;
     }
-    PGraphics G = wWin.value().getGraphics();
-    G.beginDraw();
-    G.background(0);
-    G.fill(0x42);
-    G.rect(4, 4, wWin.value().w-8, wWin.value().h-8);
-    G.textAlign(CENTER, CENTER);
-    G.fill(0xE0);
-    G.text(message, 0, 0, wWin.value().w, wWin.value().h); 
-    G.endDraw();
-    wWin.value().draw(g);
+    g.beginDraw();
+    g.background(0);
+    g.fill(0x42);
+    g.rect(4, 4, w-8, h-8);
+    g.textAlign(CENTER, CENTER);
+    g.fill(0xE0);
+    g.text(message, 0, 0, w, h);
   }
 }

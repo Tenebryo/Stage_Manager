@@ -8,7 +8,7 @@ class Rehearsal {
     notes = new ArrayList();
   }
 
-  Rehearsal(ArrayList<String> strs) throws Exception {
+  Rehearsal(ArrayList<String> strs, Script p) throws Exception {
     if (!strs.get(0).equals("Rehearsal")) {
       throw new Exception("Rehearsal Parse Error: not a Rehearsal");
     }
@@ -19,7 +19,7 @@ class Rehearsal {
     int n = int(strs.remove(0));
     try {
       for (int i = 0; i < n; i++) {
-        addNote(new Note(strs));
+        addNote(new Note(strs, p));
       }
     }
     catch(Exception e) {
@@ -34,9 +34,9 @@ class Rehearsal {
   String toString() {
     String ret = "Rehearsal\n" + date + "\n" + label + "\n";
 
-    ret += notes.size() + "\n";
+    ret += notes.size();
     for (int i = 0; i < notes.size(); i++) {
-      ret += notes.get(i) + ((i==notes.size()-1)?"":"\n");
+      ret += "\n" + notes.get(i);
     }
 
     return ret;

@@ -65,7 +65,7 @@ class Script {
     n = int(strs.remove(0));
     println(n, "Rehearsals...");
     for (int i = 0; i < n; i++) {
-      this.addRehearsal(new Rehearsal(strs));
+      this.addRehearsal(new Rehearsal(strs, this));
     }
 
     println("Done!");

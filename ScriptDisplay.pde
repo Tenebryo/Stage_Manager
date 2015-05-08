@@ -98,9 +98,9 @@ class ScriptDisplay extends UIFullscreenObject {
             }
             );
             int i;
-            for (i = 1; i < 10 && i+s < wScript.value ().rehearsals.size(); i++) {
+            for (i = 0; i < 10 && i+s < wScript.value ().rehearsals.size(); i++) {
               final Rehearsal r = wScript.value().rehearsals.get(i+s);
-              elems.add(new UISuperButton(_X, _Y+_H*i, _W, _H, r.label) {
+              elems.add(new UISuperButton(_X, _Y+_H*(i+1), _W, _H, r.label) {
                 public void onClicked() {
                   //set the current rehearsal to the this rehearsal
                   currentRehearsal.value(r);
@@ -213,28 +213,81 @@ class ScriptDisplay extends UIFullscreenObject {
       public void onClicked() {
         if (currentRehearsal.value() == null) {
           next.value(new UIPopupMsgBoxObject(wScriptDisplay.value().next, wWin, "You Must Select a Rehearsal", int(0.375*W), int(0.375*H), int(W/4.0), int(H/4.0)){
-            int lifetime = 300;
-            public boolean test() {
-              return (lifetime-- < 0);
-            }
+            int lifetime = 30; public boolean test() { return (lifetime-- < 0); }
           });
           println("Error: You Must Select a Rehearsal");
         } else if (noteType.equals("")) {
-          next.value(new UIPopupMsgBoxObject(wScriptDisplay.value().next, wWin, "You Must Select a Note Type", int(0.375*W), int(0.375*H), int(W/4.0), int(H/4.0)));
+          next.value(new UIPopupMsgBoxObject(wScriptDisplay.value().next, wWin, "You Must Select a Note Type", int(0.375*W), int(0.375*H), int(W/4.0), int(H/4.0)){
+            int lifetime = 30; public boolean test() { return (lifetime-- < 0); }
+          });
           println("Error: You Must Select a Note Type");
         } else if (selected == null) {
-          next.value(new UIPopupMsgBoxObject(wScriptDisplay.value().next, wWin, "You Must Select Some Text", int(0.375*W), int(0.375*H), int(W/4.0), int(H/4.0)));
+          next.value(new UIPopupMsgBoxObject(wScriptDisplay.value().next, wWin, "You Must Select Some Text", int(0.375*W), int(0.375*H), int(W/4.0), int(H/4.0)){
+            int lifetime = 30; public boolean test() { return (lifetime-- < 0); }
+          });
           println("Error: You Must Select Some Text");
         } else {
           currentRehearsal.value().addNote(new Note(noteType.value(), wTextBox.value().text, selected.selectedText, 0, 0, selected.selected));
           wTextBox.value().setText("");
+          clearSelected();
+          next.value(new UIPopupMsgBoxObject(wScriptDisplay.value().next, wWin, "Note Created!", int(0.375*W), int(0.375*H), int(W/4.0), int(H/4.0)){
+            int lifetime = 30; public boolean test() { return (lifetime-- < 0); }
+          });
           println("Note Created!");
         }
       }
     }
     );
-
+  
+    //scroll bar for the script view
     elem.add(new UIScrollBar(W - 20, 90, 10, H - 100, 0.5, scriptScrollAlpha));
+    
+    //note exporter
+    elem.add(new UISuperButton(10, H-50, x, 40, "Export Notes") {
+      public void onClicked() {
+        onFolderOpen = new Delegate<Boolean, File>() {
+          public Boolean execute(File... fs) {
+            File f = fs[0];
+            
+            println("Selected folder Path:", f.getAbsolutePath());
+            
+            HashMap<String, String> actorFiles = new HashMap();
+            
+            actorFiles.put("-All Actors-", "Combined notes list for " + currentRehearsal.value().label + "\n\n");
+            
+            //for each note...
+            for (Note n : currentRehearsal.value().notes) {
+              String note = n.formattedExport();
+              //add the formatted note to the export string
+              for(String a : n.actors) {
+                //check if this is the first note for the actor
+                if(actorFiles.containsKey(a)) {
+                  actorFiles.put(a, actorFiles.get(a) + note);
+                } else {
+                  //add a header for the first note
+                  String tmpNote = "Notes for " + a + " for " + currentRehearsal.value().label + "\n\n" + note;
+                  actorFiles.put(a, tmpNote);
+                }
+              }
+              actorFiles.put("-All Actors-", actorFiles.get("-All Actors-") + note);
+            }
+            
+            for (String s : actorFiles.keySet()) {
+              String[] tmp = {actorFiles.get(s)};
+              saveStrings(f.getAbsolutePath() + "/" + s + ".txt", tmp);
+            }
+            
+            next.value(new UIPopupMsgBoxObject(wScriptDisplay.value().next, wWin, "Export Successful!\nFind your Note lists in \"" + f.getAbsolutePath() + "\"", int(0.375*W), int(0.375*H), int(W/4.0), int(H/4.0)){
+              int lifetime = 90; public boolean test() { return (lifetime-- < 0); }
+            });
+            
+            return false;
+          }
+        };
+        selectFolder("Choose Export Folder", "folderOpenCallBack");
+        println("Selecting Export Folder!");
+      }
+    });
   }
 
   void loadScript(Script s) {
@@ -436,12 +489,16 @@ class ScriptDisplay extends UIFullscreenObject {
 
   LineSelection selected;
 
+  void clearSelected() {
+    selected = null;
+  }
+
   //code to select text
   void selfMousePressed() {
-    if (p_rectIntersect(mouseX, mouseY, line.x, line.y, line.w, line.h)) {
+    if (p_rectIntersect(mouseX, mouseY, line.x, line.y, line.w, line.h) && mouseButton == LEFT) {
       int y = getScriptMouseY(), x = getScriptMouseX();
       selected = new LineSelection(x, y, script);
-    } else {
+    } else if(mouseButton == RIGHT) {
       selected = null;
     }
   }

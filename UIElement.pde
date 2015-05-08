@@ -126,7 +126,6 @@ class UITextBox extends UIContainerElement {
       catch (InterruptedException e) {
       }
     }
-    println("Text: ", text);
     return super.keyPressed(key);
   }
 

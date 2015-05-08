@@ -10,6 +10,7 @@ String recentScripts = "./data/recent.dat";
 UIObject root;
 Window rootWindow;
 UIFileParamAction onFileOpen;
+Delegate<Boolean, File> onFolderOpen;
 
 int lineHeight = 24;
 
@@ -22,7 +23,8 @@ boolean done = false;
 void setup() {
   try {
     loadStrings(recentScripts);
-  } catch (Exception e) {
+  } 
+  catch (Exception e) {
     saveStrings(recentScripts, new String[0]);
   }
   size(displayWidth, displayHeight);
@@ -33,12 +35,18 @@ void setup() {
 }
 
 void draw() {
-  if(!done) return;
-  rootWindow.beginDraw();
-  root.draw();
-  root.wWin.value().draw(rootWindow.getGraphics());
-  rootWindow.endDraw();
-  rootWindow.draw();
+  try {
+    if (!done) return;
+    rootWindow.beginDraw();
+    root.draw();
+    root.wWin.value().draw(rootWindow.getGraphics());
+    rootWindow.endDraw();
+    rootWindow.draw();
+  } 
+  catch (Exception e) {
+    e.printStackTrace();
+    Object t = null; t.toString();
+  }
 }
 
 void mousePressed() {
@@ -61,5 +69,8 @@ void keyPressed() {
 }
 void fileOpenedCallBack(File f) {
   onFileOpen.execute(f);
+}
+void folderOpenCallBack(File folder) {
+  onFolderOpen.execute(folder);
 }
 
